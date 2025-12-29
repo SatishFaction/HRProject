@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TalentFlow AI - Intelligent HR Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Instrument+Serif:ital@0;1&display=swap"
+    rel="stylesheet">
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -18,26 +21,26 @@
     }
 
     :root {
-      --bg-primary: #0a0a0b;
-      --bg-secondary: #111113;
-      --bg-tertiary: #1a1a1d;
-      --bg-card: #161618;
-      --border-color: #2a2a2d;
-      --border-hover: #3a3a3d;
-      --text-primary: #f5f5f7;
-      --text-secondary: #a1a1a6;
-      --text-muted: #6e6e73;
-      --accent-primary: #00d4aa;
-      --accent-secondary: #00b894;
-      --accent-glow: rgba(0, 212, 170, 0.15);
-      --accent-blue: #5b8def;
-      --accent-purple: #a78bfa;
-      --accent-orange: #fb923c;
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-hover: #cbd5e1;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --accent-primary: #0d9488;
+      --accent-secondary: #0f766e;
+      --accent-glow: rgba(13, 148, 136, 0.12);
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-orange: #f97316;
       --danger: #ef4444;
       --success: #22c55e;
       --warning: #eab308;
-      --gradient-mesh: radial-gradient(ellipse at 20% 0%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),
-                       radial-gradient(ellipse at 80% 100%, rgba(91, 141, 239, 0.06) 0%, transparent 50%);
+      --gradient-mesh: radial-gradient(ellipse at 20% 0%, rgba(13, 148, 136, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
     }
 
     body {
@@ -84,6 +87,7 @@
         opacity: 0;
         transform: translateY(20px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -91,8 +95,15 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
     }
 
     @keyframes ripple {
@@ -100,6 +111,7 @@
         transform: scale(1);
         opacity: 0.4;
       }
+
       100% {
         transform: scale(2.5);
         opacity: 0;
@@ -107,34 +119,68 @@
     }
 
     @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
     }
 
     @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
     @keyframes waveform {
-      0%, 100% { height: 8px; }
-      50% { height: 24px; }
+
+      0%,
+      100% {
+        height: 8px;
+      }
+
+      50% {
+        height: 24px;
+      }
     }
 
     .animate-in {
       animation: fadeInUp 0.6s ease-out forwards;
     }
 
-    .delay-1 { animation-delay: 0.1s; }
-    .delay-2 { animation-delay: 0.2s; }
-    .delay-3 { animation-delay: 0.3s; }
-    .delay-4 { animation-delay: 0.4s; }
+    .delay-1 {
+      animation-delay: 0.1s;
+    }
+
+    .delay-2 {
+      animation-delay: 0.2s;
+    }
+
+    .delay-3 {
+      animation-delay: 0.3s;
+    }
+
+    .delay-4 {
+      animation-delay: 0.4s;
+    }
   </style>
 </head>
+
 <body>
   <div id="root"></div>
-  
+
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback } = React;
 
@@ -142,154 +188,154 @@
     const Icons = {
       Briefcase: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
         </svg>
       ),
       FileText: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14,2 14,8 20,8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10,9 9,9 8,9"/>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14,2 14,8 20,8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10,9 9,9 8,9" />
         </svg>
       ),
       Phone: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
         </svg>
       ),
       Users: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
       ),
       Upload: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17,8 12,3 7,8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17,8 12,3 7,8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
         </svg>
       ),
       Mic: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-          <line x1="12" y1="19" x2="12" y2="23"/>
-          <line x1="8" y1="23" x2="16" y2="23"/>
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+          <line x1="12" y1="19" x2="12" y2="23" />
+          <line x1="8" y1="23" x2="16" y2="23" />
         </svg>
       ),
       MicOff: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="1" y1="1" x2="23" y2="23"/>
-          <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
-          <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
-          <line x1="12" y1="19" x2="12" y2="23"/>
-          <line x1="8" y1="23" x2="16" y2="23"/>
+          <line x1="1" y1="1" x2="23" y2="23" />
+          <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" />
+          <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23" />
+          <line x1="12" y1="19" x2="12" y2="23" />
+          <line x1="8" y1="23" x2="16" y2="23" />
         </svg>
       ),
       PhoneCall: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
         </svg>
       ),
       PhoneOff: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/>
-          <line x1="23" y1="1" x2="1" y2="23"/>
+          <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91" />
+          <line x1="23" y1="1" x2="1" y2="23" />
         </svg>
       ),
       Search: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
       ),
       Check: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20,6 9,17 4,12"/>
+          <polyline points="20,6 9,17 4,12" />
         </svg>
       ),
       X: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       ),
       ChevronRight: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="9,18 15,12 9,6"/>
+          <polyline points="9,18 15,12 9,6" />
         </svg>
       ),
       Sparkles: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
+          <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z" />
         </svg>
       ),
       BarChart: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="12" y1="20" x2="12" y2="10"/>
-          <line x1="18" y1="20" x2="18" y2="4"/>
-          <line x1="6" y1="20" x2="6" y2="16"/>
+          <line x1="12" y1="20" x2="12" y2="10" />
+          <line x1="18" y1="20" x2="18" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="16" />
         </svg>
       ),
       Settings: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
         </svg>
       ),
       Globe: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="2" y1="12" x2="22" y2="12"/>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
         </svg>
       ),
       Award: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="8" r="7"/>
-          <polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88"/>
+          <circle cx="12" cy="8" r="7" />
+          <polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88" />
         </svg>
       ),
       Zap: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+          <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2" />
         </svg>
       ),
       Play: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="5,3 19,12 5,21 5,3"/>
+          <polygon points="5,3 19,12 5,21 5,3" />
         </svg>
       ),
       Pause: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="6" y="4" width="4" height="16"/>
-          <rect x="14" y="4" width="4" height="16"/>
+          <rect x="6" y="4" width="4" height="16" />
+          <rect x="14" y="4" width="4" height="16" />
         </svg>
       ),
       Copy: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
       ),
       Download: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7,10 12,15 17,10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7,10 12,15 17,10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
         </svg>
       ),
       Linkedin: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-          <rect x="2" y="9" width="4" height="12"/>
-          <circle cx="4" cy="4" r="2"/>
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+          <rect x="2" y="9" width="4" height="12" />
+          <circle cx="4" cy="4" r="2" />
         </svg>
       )
     };
@@ -311,7 +357,7 @@
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        background: 'rgba(10, 10, 11, 0.8)',
+        background: 'rgba(248, 250, 252, 0.9)',
         backdropFilter: 'blur(20px)',
         borderBottom: '1px solid var(--border-color)',
         zIndex: 1000,
@@ -332,7 +378,7 @@
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'var(--bg-primary)',
+        color: '#ffffff',
       },
       nav: {
         display: 'flex',
@@ -466,8 +512,8 @@
         padding: '14px 28px',
         fontSize: '15px',
         fontWeight: '600',
-        color: variant === 'primary' ? 'var(--bg-primary)' : 'var(--text-primary)',
-        background: variant === 'primary' 
+        color: variant === 'primary' ? '#ffffff' : 'var(--text-primary)',
+        background: variant === 'primary'
           ? 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)'
           : 'var(--bg-tertiary)',
         border: variant === 'primary' ? 'none' : '1px solid var(--border-color)',
@@ -528,7 +574,7 @@
         width: '180px',
         height: '180px',
         borderRadius: '50%',
-        background: isActive 
+        background: isActive
           ? 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%)'
           : 'var(--bg-tertiary)',
         display: 'flex',
@@ -764,10 +810,50 @@
     // ==================== PAGES ====================
 
     // Dashboard Page
+        // Dashboard Page
     function DashboardPage() {
-      const stats = [];
+      const [stats, setStats] = useState([]);
+      const [recentActivity, setRecentActivity] = useState([]);
+      const [loading, setLoading] = useState(true);
 
-      const recentActivity = [];
+      useEffect(() => {
+        const fetchData = async () => {
+           try {
+             // Fetch stats
+             const statsRes = await fetch(`${API_CONFIG.BASE_URL}/dashboard/stats/`);
+             const statsData = await statsRes.json();
+             
+             // Fetch candidates for recent activity
+             const candsRes = await fetch(`${API_CONFIG.BASE_URL}/candidates/`);
+             const candsData = await candsRes.json();
+             const apps = candsData.candidates || [];
+
+             setStats([
+               { label: 'Total Candidates', value: statsData.total, change: '+12%', icon: <Icons.Users /> },
+               { label: 'Shortlisted', value: statsData.shortlisted, change: '+5%', icon: <Icons.Award /> },
+               { label: 'Avg Score', value: `${statsData.avg_score}%`, change: '+2%', icon: <Icons.BarChart /> },
+               { label: 'Pending Review', value: statsData.pending, change: '-3%', icon: <Icons.Briefcase /> },
+             ]);
+
+             // Map applications to recent activity
+             const recent = apps.slice(0, 5).map(app => ({
+                type: 'score',
+                title: 'Resume Scored',
+                candidate: app.candidate_name,
+                time: new Date(app.created_at).toLocaleDateString(),
+                score: app.score
+             }));
+             setRecentActivity(recent);
+             setLoading(false);
+           } catch (e) {
+             console.error("Dashboard error", e);
+             setLoading(false);
+           }
+        };
+        fetchData();
+      }, []);
+
+      if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading dashboard...</div>;
 
       return (
         <div>
@@ -776,30 +862,22 @@
               <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-primary)' }}>Welcome back</span>
             </h1>
             <p style={styles.pageSubtitle}>
-              Your AI-powered recruitment dashboard. Here's what's happening today.
+              Your AI-powered recruitment dashboard. Here's what's happening.
             </p>
           </div>
 
           <div style={{ ...styles.grid, gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: '32px' }}>
             {stats.map((stat, i) => (
-              <div 
-                key={stat.label} 
+              <div
+                key={stat.label}
                 style={{ ...styles.card, opacity: 0 }}
                 className={`animate-in delay-${i + 1}`}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-hover)';
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-color)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                   <div style={{ color: 'var(--text-muted)' }}>{stat.icon}</div>
-                  <span style={{ 
-                    fontSize: '12px', 
-                    fontWeight: '600', 
+                  <span style={{
+                    fontSize: '12px',
+                    fontWeight: '600',
                     color: 'var(--success)',
                     background: 'rgba(34, 197, 94, 0.1)',
                     padding: '4px 8px',
@@ -815,12 +893,12 @@
           <div style={styles.grid}>
             <div style={styles.card} className="animate-in delay-2">
               <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Recent Activity</h3>
-              {recentActivity.map((activity, i) => (
-                <div 
-                  key={i} 
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
+              {recentActivity.length > 0 ? recentActivity.map((activity, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: '16px',
                     padding: '12px 0',
                     borderBottom: i < recentActivity.length - 1 ? '1px solid var(--border-color)' : 'none'
@@ -830,28 +908,24 @@
                     width: '40px',
                     height: '40px',
                     borderRadius: '10px',
-                    background: activity.type === 'score' ? 'rgba(0, 212, 170, 0.1)' 
-                      : activity.type === 'jd' ? 'rgba(91, 141, 239, 0.1)' 
-                      : 'rgba(167, 139, 250, 0.1)',
+                    background: 'rgba(0, 212, 170, 0.1)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: activity.type === 'score' ? 'var(--accent-primary)' 
-                      : activity.type === 'jd' ? 'var(--accent-blue)' 
-                      : 'var(--accent-purple)',
+                    color: 'var(--accent-primary)',
                   }}>
-                    {activity.type === 'score' ? <Icons.FileText /> : activity.type === 'jd' ? <Icons.Briefcase /> : <Icons.Phone />}
+                    <Icons.FileText />
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: '500', marginBottom: '2px' }}>{activity.title}</div>
                     <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                      {activity.candidate || activity.role}
+                      {activity.candidate}
                     </div>
                   </div>
                   {activity.score && (
-                    <div style={{ 
-                      padding: '4px 12px', 
-                      borderRadius: '20px', 
+                    <div style={{
+                      padding: '4px 12px',
+                      borderRadius: '20px',
                       background: activity.score >= 70 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(234, 179, 8, 0.1)',
                       color: activity.score >= 70 ? 'var(--success)' : 'var(--warning)',
                       fontWeight: '600',
@@ -862,7 +936,9 @@
                   )}
                   <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{activity.time}</div>
                 </div>
-              ))}
+              )) : (
+                 <div style={{ color: 'var(--text-muted)', padding: '20px' }}>No recent activity</div>
+              )}
             </div>
 
             <div style={styles.card} className="animate-in delay-3">
@@ -871,10 +947,8 @@
                 {[
                   { icon: <Icons.FileText />, label: 'Score Resume', desc: 'Analyze candidate fit', color: 'var(--accent-primary)' },
                   { icon: <Icons.Briefcase />, label: 'Create JD', desc: 'Generate job description', color: 'var(--accent-blue)' },
-                  { icon: <Icons.Phone />, label: 'Voice Interview', desc: 'Start AI screening call', color: 'var(--accent-purple)' },
-                  { icon: <Icons.Users />, label: 'Review Candidates', desc: 'View shortlisted pool', color: 'var(--accent-orange)' },
                 ].map((action) => (
-                  <div 
+                  <div
                     key={action.label}
                     style={{
                       display: 'flex',
@@ -911,10 +985,13 @@
       );
     }
 
+
     // Resume Scoring Page
+        // Resume Scoring Page
     function ResumeScorePage() {
       const [jobDescription, setJobDescription] = useState('');
       const [resumeFile, setResumeFile] = useState(null);
+      const [candidateName, setCandidateName] = useState('');
       const [isDragActive, setIsDragActive] = useState(false);
       const [loading, setLoading] = useState(false);
       const [result, setResult] = useState(null);
@@ -937,7 +1014,7 @@
 
       const handleSubmit = async () => {
         if (!jobDescription || !resumeFile) return;
-        
+
         setLoading(true);
         setError(null);
         setResult(null);
@@ -946,6 +1023,7 @@
           const formData = new FormData();
           formData.append('job_description', jobDescription);
           formData.append('resume_file', resumeFile);
+          if (candidateName) formData.append('candidate_name', candidateName);
 
           const response = await fetch(`${API_CONFIG.BASE_URL}/score_resume/`, {
             method: 'POST',
@@ -953,7 +1031,8 @@
           });
 
           if (!response.ok) {
-            throw new Error('Failed to score resume');
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Failed to analyze resume');
           }
 
           const data = await response.json();
@@ -972,7 +1051,7 @@
               <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-primary)' }}>Resume</span> Scoring
             </h1>
             <p style={styles.pageSubtitle}>
-              Upload a resume and job description to get an AI-powered compatibility score with detailed analysis.
+              Upload a resume and job description to get an instant AI-powered compatibility score.
             </p>
           </div>
 
@@ -983,16 +1062,29 @@
                   <Icons.FileText />
                 </div>
                 <div>
-                  <h3 style={styles.cardTitle}>Job Description</h3>
-                  <p style={styles.cardDescription}>Paste or enter the job requirements</p>
+                  <h3 style={styles.cardTitle}>Application Details</h3>
+                  <p style={styles.cardDescription}>Enter candidate and job info</p>
                 </div>
               </div>
-              
+
+               <div style={styles.formGroup}>
+                <label style={styles.label}>Candidate Name (Optional)</label>
+                <div style={{ position: 'relative' }}>
+                  <Icons.Users style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', width: '16px' }} />
+                  <input
+                    style={{ ...styles.input, paddingLeft: '36px' }}
+                    placeholder="e.g. John Doe"
+                    value={candidateName}
+                    onChange={(e) => setCandidateName(e.target.value)}
+                  />
+                </div>
+              </div>
+
               <div style={styles.formGroup}>
-                <label style={styles.label}>Job Description *</label>
+                <label style={styles.label}>Job Description</label>
                 <textarea
-                  style={styles.textarea}
-                  placeholder="Enter the complete job description including requirements, responsibilities, and qualifications..."
+                  style={{ ...styles.textarea, height: '150px' }}
+                  placeholder="Paste the job requirements here..."
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                   onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
@@ -1001,7 +1093,7 @@
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.label}>Resume File *</label>
+                <label style={styles.label}>Resume Upload</label>
                 <div
                   style={styles.dropzone(isDragActive)}
                   onDragOver={(e) => { e.preventDefault(); setIsDragActive(true); }}
@@ -1010,109 +1102,61 @@
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <input
-                    ref={fileInputRef}
                     type="file"
-                    accept=".pdf,.docx"
-                    onChange={handleFileSelect}
+                    ref={fileInputRef}
                     style={{ display: 'none' }}
+                    onChange={handleFileSelect}
+                    accept=".pdf,.docx"
                   />
-                  {resumeFile ? (
-                    <div>
-                      <div style={{ color: 'var(--success)', marginBottom: '8px' }}>
-                        <Icons.Check />
-                      </div>
-                      <div style={{ fontWeight: '500' }}>{resumeFile.name}</div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                        Click to replace
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div style={{ color: 'var(--text-muted)', marginBottom: '12px' }}>
-                        <Icons.Upload />
-                      </div>
-                      <div style={{ fontWeight: '500', marginBottom: '4px' }}>
-                        Drop your resume here or click to browse
-                      </div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                        Supports PDF and DOCX files
-                      </div>
-                    </div>
-                  )}
+                  <div style={{ marginBottom: '12px', color: 'var(--accent-primary)' }}>
+                    <Icons.Upload />
+                  </div>
+                  <div style={{ fontWeight: '500', marginBottom: '4px' }}>
+                    {resumeFile ? resumeFile.name : 'Click to upload or drag & drop'}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>PDF or DOCX (Max 5MB)</div>
                 </div>
               </div>
 
-              <button
-                style={{
-                  ...styles.button('primary'),
-                  width: '100%',
-                  opacity: (!jobDescription || !resumeFile || loading) ? 0.5 : 1,
-                  cursor: (!jobDescription || !resumeFile || loading) ? 'not-allowed' : 'pointer',
-                }}
-                onClick={handleSubmit}
-                disabled={!jobDescription || !resumeFile || loading}
-                onMouseEnter={(e) => {
-                  if (!loading && jobDescription && resumeFile) {
-                    e.target.style.transform = 'translateY(-2px)';
-                  }
-                }}
-                onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
-              >
-                {loading ? <Spinner size={18} /> : <Icons.Sparkles />}
-                {loading ? 'Analyzing...' : 'Score Resume'}
-              </button>
-
               {error && (
-                <div style={{ 
-                  marginTop: '16px', 
-                  padding: '12px 16px', 
-                  background: 'rgba(239, 68, 68, 0.1)', 
-                  borderRadius: '8px',
-                  color: 'var(--danger)',
-                  fontSize: '14px'
-                }}>
+                <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', marginBottom: '20px', fontSize: '14px' }}>
                   {error}
                 </div>
               )}
+
+              <button
+                style={{ ...styles.button('primary'), width: '100%' }}
+                onClick={handleSubmit}
+                disabled={loading || !jobDescription || !resumeFile}
+              >
+                {loading ? 'Analyzing...' : <>Analyze Match <Icons.ChevronRight /></>}
+              </button>
             </div>
 
             <div style={styles.card} className="animate-in delay-2">
               <div style={styles.cardHeader}>
                 <div style={styles.cardIcon('var(--accent-blue)')}>
-                  <Icons.BarChart />
+                  <Icons.Award />
                 </div>
                 <div>
-                  <h3 style={styles.cardTitle}>Score Analysis</h3>
-                  <p style={styles.cardDescription}>AI-powered compatibility assessment</p>
+                  <h3 style={styles.cardTitle}>Analysis Result</h3>
+                  <p style={styles.cardDescription}>AI-generated score and insights</p>
                 </div>
               </div>
 
               {result ? (
-                <div>
+                <div style={{ textAlign: 'center' }}>
                   <ScoreCircle score={result.score} />
-                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                    <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
-                      {result.score >= 70 ? 'Strong Match' : result.score >= 40 ? 'Moderate Match' : 'Weak Match'}
-                    </div>
-                    <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                      Based on job requirements analysis
-                    </div>
-                  </div>
-                  <div style={styles.resultCard}>
-                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      Detailed Explanation
-                    </div>
-                    <p style={{ fontSize: '14px', lineHeight: '1.7', color: 'var(--text-primary)' }}>
-                      {result.explanation}
-                    </p>
-                  </div>
+                  <p style={{ marginTop: '24px', lineHeight: '1.6', color: 'var(--text-primary)', textAlign: 'left' }}>
+                    {result.explanation}
+                  </p>
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
                   <div style={{ marginBottom: '16px', opacity: 0.5 }}>
                     <Icons.BarChart />
                   </div>
-                  <p>Upload a resume to see the analysis</p>
+                  <p>Results will appear here after analysis</p>
                 </div>
               )}
             </div>
@@ -1120,6 +1164,8 @@
         </div>
       );
     }
+
+
 
     // Job Description Generator Page
     function JDGeneratorPage() {
@@ -1299,10 +1345,10 @@
               </button>
 
               {error && (
-                <div style={{ 
-                  marginTop: '16px', 
-                  padding: '12px 16px', 
-                  background: 'rgba(239, 68, 68, 0.1)', 
+                <div style={{
+                  marginTop: '16px',
+                  padding: '12px 16px',
+                  background: 'rgba(239, 68, 68, 0.1)',
                   borderRadius: '8px',
                   color: 'var(--danger)',
                   fontSize: '14px'
@@ -1335,9 +1381,9 @@
               </div>
 
               {result ? (
-                <div style={{ 
-                  background: 'var(--bg-secondary)', 
-                  borderRadius: '12px', 
+                <div style={{
+                  background: 'var(--bg-secondary)',
+                  borderRadius: '12px',
                   padding: '24px',
                   maxHeight: '600px',
                   overflow: 'auto',
@@ -1361,120 +1407,233 @@
       );
     }
 
-    // Voice Agent Page
+        // Voice Agent Page
     function VoiceAgentPage() {
       const [isConnected, setIsConnected] = useState(false);
-      const [isListening, setIsListening] = useState(false);
-      const [isSpeaking, setIsSpeaking] = useState(false);
+      const [isListening, setIsListening] = useState(false); // Controls mic mute/unmute
       const [transcript, setTranscript] = useState([]);
-      const [candidateInfo, setCandidateInfo] = useState({ name: '', phone: '', resume: null });
-      const [apiKey, setApiKey] = useState('');
-      const [showConfig, setShowConfig] = useState(true);
+      const [status, setStatus] = useState('idle'); // idle, connecting, connected, error
+      const [error, setError] = useState(null);
+      const audioRef = useRef(null);
+      const peerConnectionRef = useRef(null);
+      const dataChannelRef = useRef(null);
+      const streamRef = useRef(null); // Local media stream
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-      const handleStartCall = () => {
-        if (!apiKey) {
-          alert('Please enter your OpenAI API key');
-          return;
+      // Cleanup on unmount
+      useEffect(() => {
+        return () => {
+          handleEndCall();
+        };
+      }, []);
+
+      const getEphemeralToken = async () => {
+        try {
+          const formData = new FormData();
+          formData.append('candidate_name', user.full_name || 'Candidate');
+          
+          const response = await fetch(`${API_CONFIG.BASE_URL}/realtime/session/`, {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) throw new Error('Failed to get session token');
+          
+          const data = await response.json();
+          if (!data.success) throw new Error(data.message);
+          
+          return data.session.client_secret.value;
+        } catch (err) {
+          console.error("Token Error:", err);
+          throw new Error("Could not start interview session. Contact HR.");
         }
-        setIsConnected(true);
-        setShowConfig(false);
+      };
+
+      const handleStartCall = async () => {
+        try {
+          setStatus('connecting');
+          setError(null);
+
+          // 1. Get Ephemeral Token
+          const ephemeralToken = await getEphemeralToken();
+
+          // 2. Setup WebRTC Peer Connection
+          const pc = new RTCPeerConnection();
+          peerConnectionRef.current = pc;
+
+          // Setup remote audio
+          pc.ontrack = (event) => {
+            if (audioRef.current) {
+              audioRef.current.srcObject = event.streams[0];
+            }
+          };
+
+          // Setup Data Channel for events
+          const dc = pc.createDataChannel("oai-events");
+          dataChannelRef.current = dc;
+          
+          dc.onopen = () => {
+            console.log("Data channel open");
+            const responseCreate = {
+              type: "response.create",
+              response: {
+                modalities: ["audio", "text"],
+                instructions: `Start the interview now. The user is ${user.full_name || 'the candidate'}. Say hello properly.` 
+              }
+            };
+            dc.send(JSON.stringify(responseCreate));
+          };
+
+          dc.onmessage = (e) => {
+            try {
+              const event = JSON.parse(e.data);
+              if (event.type === 'response.audio_transcript.done') {
+                 setTranscript(prev => [...prev, { role: 'assistant', content: event.transcript }]);
+              } else if (event.type === 'conversation.item.input_audio_transcription.completed') {
+                 setTranscript(prev => [...prev, { role: 'user', content: event.transcript }]);
+              }
+            } catch (err) {
+              console.error("Event error", err);
+            }
+          };
+
+          // 3. Get Microphone Audio
+          const ms = await navigator.mediaDevices.getUserMedia({ audio: true });
+          streamRef.current = ms;
+          pc.addTrack(ms.getTracks()[0]);
+
+          // 4. Create Offer & Set Local Description
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+
+          // 5. Connect to OpenAI Realtime API
+          const baseUrl = "https://api.openai.com/v1/realtime";
+          const model = "gpt-4o-realtime-preview-2024-12-17";
+          
+          const response = await fetch(`${baseUrl}?model=${model}`, {
+            method: "POST",
+            body: offer.sdp,
+            headers: {
+              "Authorization": `Bearer ${ephemeralToken}`,
+              "Content-Type": "application/sdp"
+            },
+          });
+
+          if (!response.ok) throw new Error(`OpenAI Connection failed: ${response.statusText}`);
+
+          // 6. Set Remote Description (Answer)
+          const answerSdp = await response.text();
+          await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
+
+          setIsConnected(true);
+          setIsListening(true);
+          setStatus('connected');
+
+        } catch (err) {
+          console.error("Connection Error:", err);
+          setError(err.message);
+          setStatus('error');
+          handleEndCall();
+        }
       };
 
       const handleEndCall = () => {
+        if (peerConnectionRef.current) {
+          peerConnectionRef.current.close();
+          peerConnectionRef.current = null;
+        }
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        if (audioRef.current) {
+          audioRef.current.srcObject = null;
+        }
         setIsConnected(false);
         setIsListening(false);
-        setIsSpeaking(false);
+        setStatus('idle');
       };
 
       const toggleMic = () => {
-        setIsListening(!isListening);
+        if (streamRef.current) {
+          const audioTrack = streamRef.current.getAudioTracks()[0];
+          audioTrack.enabled = !audioTrack.enabled;
+          setIsListening(audioTrack.enabled);
+        }
       };
 
       return (
         <div>
+           <audio ref={audioRef} autoPlay />
+
           <div style={styles.pageHeader} className="animate-in">
             <h1 style={styles.pageTitle}>
               <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-purple)' }}>Voice</span> Interview Agent
             </h1>
             <p style={styles.pageSubtitle}>
-              AI-powered voice screening calls that evaluate candidates and generate detailed reports.
+              AI-powered voice screening calls. Please find a quiet place before starting.
             </p>
           </div>
 
           <div style={styles.grid}>
             <div style={styles.card} className="animate-in delay-1">
-              {showConfig && !isConnected ? (
-                <>
-                  <div style={styles.cardHeader}>
-                    <div style={styles.cardIcon('var(--accent-purple)')}>
-                      <Icons.Settings />
-                    </div>
-                    <div>
-                      <h3 style={styles.cardTitle}>Call Configuration</h3>
-                      <p style={styles.cardDescription}>Set up the voice interview</p>
-                    </div>
+              {!isConnected ? (
+                <div style={{ padding: '40px', textAlign: 'center' }}>
+                  <div style={{ 
+                    width: '80px', height: '80px', borderRadius: '50%', 
+                    background: 'var(--bg-tertiary)', display: 'flex', 
+                    alignItems: 'center', justifyContent: 'center', 
+                    margin: '0 auto 24px', color: 'var(--accent-purple)' 
+                  }}>
+                    <Icons.Mic />
                   </div>
-
-                  <div style={styles.configSection}>
-                    <div style={styles.configTitle}>
-                      <Icons.Zap /> OpenAI Realtime API
+                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '12px' }}>Ready for your interview?</h2>
+                  <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', maxWidth: '400px', margin: '0 auto 32px' }}>
+                    The AI interviewer will ask you questions about your background and experience. 
+                    Speak naturally and clearly. The session will be recorded for HR review.
+                  </p>
+                  
+                  {error && (
+                    <div style={{ 
+                      padding: '12px', background: 'rgba(239, 68, 68, 0.1)', 
+                      color: 'var(--danger)', borderRadius: '8px', marginBottom: '24px',
+                      fontSize: '14px'
+                    }}>
+                      {error}
                     </div>
-                    <div style={styles.formGroup}>
-                      <label style={styles.label}>API Key</label>
-                      <input
-                        type="password"
-                        style={styles.input}
-                        placeholder="sk-..."
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        onFocus={(e) => e.target.style.borderColor = 'var(--accent-purple)'}
-                        onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={styles.configSection}>
-                    <div style={styles.configTitle}>
-                      <Icons.Users /> Candidate Information
-                    </div>
-                    <div style={styles.formGroup}>
-                      <label style={styles.label}>Candidate Name</label>
-                      <input
-                        style={styles.input}
-                        placeholder="Enter candidate name"
-                        value={candidateInfo.name}
-                        onChange={(e) => setCandidateInfo({...candidateInfo, name: e.target.value})}
-                        onFocus={(e) => e.target.style.borderColor = 'var(--accent-purple)'}
-                        onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
-                      />
-                    </div>
-                    <div style={styles.formGroup}>
-                      <label style={styles.label}>Phone Number (Optional)</label>
-                      <input
-                        style={styles.input}
-                        placeholder="+91 ..."
-                        value={candidateInfo.phone}
-                        onChange={(e) => setCandidateInfo({...candidateInfo, phone: e.target.value})}
-                        onFocus={(e) => e.target.style.borderColor = 'var(--accent-purple)'}
-                        onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
-                      />
-                    </div>
-                  </div>
+                  )}
 
                   <button
                     style={{
                       ...styles.button('primary'),
-                      width: '100%',
+                      padding: '16px 48px',
+                      fontSize: '18px',
                       background: 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%)',
+                      opacity: status === 'connecting' ? 0.7 : 1,
+                      cursor: status === 'connecting' ? 'not-allowed' : 'pointer'
                     }}
                     onClick={handleStartCall}
+                    disabled={status === 'connecting'}
                   >
-                    <Icons.PhoneCall /> Start Voice Interview
+                   {status === 'connecting' ? 'Connecting...' : <span>Start Interview</span>}
                   </button>
-                </>
+                </div>
               ) : (
                 <div style={styles.voiceAgent}>
-                  <div 
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <div style={{ 
+                        fontSize: '14px', fontWeight: '600', 
+                        color: 'var(--success)', display: 'inline-flex', 
+                        alignItems: 'center', gap: '8px',
+                        padding: '6px 12px', background: 'rgba(34, 197, 94, 0.1)',
+                        borderRadius: '20px'
+                    }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'currentColor', animation: 'pulse 1s infinite' }} />
+                        Live Interview in Progress
+                    </div>
+                  </div>
+
+                  <div
                     style={styles.voiceCircle(isListening)}
                     onClick={toggleMic}
                   >
@@ -1494,35 +1653,18 @@
                   </div>
 
                   <div style={{ marginBottom: '24px' }}>
-                    <Waveform isActive={isListening || isSpeaking} bars={16} />
-                  </div>
-
-                  <div style={{ marginBottom: '24px' }}>
-                    <span style={styles.statusBadge(isListening ? 'active' : 'pending')}>
-                      <span style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        background: 'currentColor',
-                        animation: isListening ? 'pulse 1s infinite' : 'none',
-                      }} />
-                      {isListening ? 'Listening...' : isConnected ? 'Click mic to speak' : 'Not connected'}
-                    </span>
+                    <Waveform isActive={isListening} bars={16} />
+                    <p style={{ textAlign: 'center', marginTop: '16px', color: 'var(--text-secondary)' }}>
+                        {isListening ? 'Listening...' : 'Microphone muted'}
+                    </p>
                   </div>
 
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                     <button
-                      style={styles.button('secondary')}
-                      onClick={toggleMic}
-                    >
-                      {isListening ? <Icons.Pause /> : <Icons.Play />}
-                      {isListening ? 'Pause' : 'Resume'}
-                    </button>
-                    <button
-                      style={{ ...styles.button('secondary'), color: 'var(--danger)' }}
+                      style={{ ...styles.button('secondary'), color: 'var(--danger)', borderColor: 'var(--danger)' }}
                       onClick={handleEndCall}
                     >
-                      <Icons.PhoneOff /> End Call
+                      <Icons.PhoneOff /> End Interview
                     </button>
                   </div>
                 </div>
@@ -1544,15 +1686,15 @@
                 <div style={styles.transcript}>
                   {transcript.map((msg, i) => (
                     <div key={i} style={styles.transcriptMessage(msg.role)}>
-                      <div style={{ 
-                        fontSize: '11px', 
-                        fontWeight: '600', 
+                      <div style={{
+                        fontSize: '11px',
+                        fontWeight: '600',
                         color: msg.role === 'assistant' ? 'var(--accent-blue)' : 'var(--accent-primary)',
                         marginBottom: '6px',
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px'
                       }}>
-                        {msg.role === 'assistant' ? 'AI Interviewer' : 'Candidate'}
+                        {msg.role === 'assistant' ? 'AI Interviewer' : 'You'}
                       </div>
                       <p style={{ fontSize: '14px', lineHeight: '1.6' }}>{msg.content}</p>
                     </div>
@@ -1566,69 +1708,50 @@
                   <p>Transcript will appear here during the call</p>
                 </div>
               )}
-
-              {transcript.length > 0 && (
-                <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-                  <button style={{ ...styles.button('secondary'), flex: 1 }}>
-                    <Icons.Download /> Export Transcript
-                  </button>
-                  <button style={{ ...styles.button('secondary'), flex: 1 }}>
-                    <Icons.BarChart /> Generate Report
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Integration Guide */}
-          <div style={{ ...styles.card, marginTop: '24px' }} className="animate-in delay-3">
-            <div style={styles.cardHeader}>
-              <div style={styles.cardIcon('var(--accent-primary)')}>
-                <Icons.Zap />
-              </div>
-              <div>
-                <h3 style={styles.cardTitle}>OpenAI Realtime API Integration</h3>
-                <p style={styles.cardDescription}>Connect your backend for production voice calls</p>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>WebSocket Connection</div>
-                <div style={styles.codeBlock}>
-{`const ws = new WebSocket(
-  'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17',
-  ['realtime', \`openai-insecure-api-key.\${API_KEY}\`]
-);`}
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Session Configuration</div>
-                <div style={styles.codeBlock}>
-{`ws.send(JSON.stringify({
-  type: 'session.update',
-  session: {
-    voice: 'alloy',
-    instructions: 'You are an HR interviewer...',
-    input_audio_transcription: { model: 'whisper-1' }
-  }
-}));`}
-                </div>
-              </div>
             </div>
           </div>
         </div>
       );
     }
 
+
     // Candidates Page
+        // Candidates Page
+        // Candidates Page
     function CandidatesPage() {
       const [selectedCandidate, setSelectedCandidate] = useState(null);
       const [filter, setFilter] = useState('all');
+      const [candidates, setCandidates] = useState([]);
+      const [loading, setLoading] = useState(true);
 
-      const candidates = [];
+      useEffect(() => {
+        const fetchCandidates = async () => {
+          try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/candidates/`);
+            const data = await response.json();
+            // Map backend data to frontend expectations
+            const mapped = (data.candidates || []).map(app => ({
+                id: app.id,
+                name: app.candidate_name,
+                role: app.job_role || 'Applicant',
+                score: app.score,
+                status: app.status,
+                interviewed: false, 
+                resumeUrl: app.resume_url
+            }));
+            setCandidates(mapped);
+          } catch (e) {
+            console.error("Candidates error", e);
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchCandidates();
+      }, []);
 
       const filteredCandidates = candidates.filter(c => filter === 'all' || c.status === filter);
+
+      if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading candidates...</div>;
 
       return (
         <div>
@@ -1672,16 +1795,6 @@
                     borderColor: selectedCandidate?.id === candidate.id ? 'var(--accent-primary)' : 'transparent',
                   }}
                   onClick={() => setSelectedCandidate(candidate)}
-                  onMouseEnter={(e) => {
-                    if (selectedCandidate?.id !== candidate.id) {
-                      e.currentTarget.style.borderColor = 'var(--border-hover)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedCandidate?.id !== candidate.id) {
-                      e.currentTarget.style.borderColor = 'transparent';
-                    }
-                  }}
                 >
                   <div style={styles.avatar}>
                     {candidate.name.split(' ').map(n => n[0]).join('')}
@@ -1691,8 +1804,8 @@
                     <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{candidate.role}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ 
-                      fontWeight: '700', 
+                    <div style={{
+                      fontWeight: '700',
                       fontSize: '18px',
                       color: candidate.score >= 70 ? 'var(--success)' : candidate.score >= 50 ? 'var(--warning)' : 'var(--danger)',
                       marginBottom: '4px'
@@ -1716,12 +1829,39 @@
                     </div>
                     <div>
                       <h3 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '4px' }}>{selectedCandidate.name}</h3>
-                      <p style={{ color: 'var(--text-secondary)' }}>{selectedCandidate.role}</p>
-                      <div style={{ marginTop: '8px' }}>
-                        <span style={styles.tag('var(--accent-primary)')}>Python</span>
-                        <span style={styles.tag('var(--accent-blue)')}>FastAPI</span>
-                        <span style={styles.tag('var(--accent-purple)')}>ML</span>
-                      </div>
+                      <div style={{ color: 'var(--text-secondary)' }}>{selectedCandidate.role}</div>
+                      
+                      {selectedCandidate.resumeUrl && (
+                        <a 
+                          href={selectedCandidate.resumeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            marginTop: '8px',
+                            background: 'rgba(0, 212, 170, 0.1)',
+                            color: 'var(--accent-primary)',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            textDecoration: 'none',
+                            transition: 'background 0.2s',
+                            cursor: 'pointer'
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = 'rgba(0, 212, 170, 0.2)'}
+                          onMouseLeave={(e) => e.target.style.background = 'rgba(0, 212, 170, 0.1)'}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7,10 12,15 17,10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                          </svg>
+                          View Resume
+                        </a>
+                      )}
                     </div>
                   </div>
 
@@ -1735,15 +1875,6 @@
                         <div style={styles.progressFill(selectedCandidate.score, selectedCandidate.score >= 70 ? 'var(--success)' : 'var(--warning)')} />
                       </div>
                     </div>
-                    <div style={styles.configSection}>
-                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Interview Status</div>
-                      <div style={{ fontSize: '18px', fontWeight: '600' }}>
-                        {selectedCandidate.interviewed ? 'Completed' : 'Pending'}
-                      </div>
-                      <span style={{ ...styles.statusBadge(selectedCandidate.interviewed ? 'completed' : 'pending'), marginTop: '8px' }}>
-                        {selectedCandidate.interviewed ? 'Voice interview done' : 'Schedule interview'}
-                      </span>
-                    </div>
                   </div>
 
                   <div style={styles.resultCard}>
@@ -1751,35 +1882,22 @@
                       AI Assessment Summary
                     </div>
                     <p style={{ fontSize: '14px', lineHeight: '1.7' }}>
-                      Strong technical background with excellent Python and FastAPI skills. Demonstrated experience in building scalable APIs and working with machine learning models. Communication skills were evaluated as above average during the voice interview. Recommended for technical round.
+                      Candidate scored {selectedCandidate.score}%. Review full details in the match report.
                     </p>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                    <button style={{ ...styles.button('primary'), flex: 1 }}>
-                      <Icons.Check /> Shortlist
-                    </button>
-                    <button style={{ ...styles.button('secondary'), flex: 1 }}>
-                      <Icons.Phone /> Schedule Call
-                    </button>
-                    <button style={{ ...styles.button('secondary'), flex: 1 }}>
-                      <Icons.Download /> Download Report
-                    </button>
                   </div>
                 </>
               ) : (
-                <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
-                  <div style={{ marginBottom: '16px', opacity: 0.5 }}>
-                    <Icons.Users />
-                  </div>
-                  <p>Select a candidate to view details</p>
-                </div>
+                 <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-muted)' }}>
+                   Select a candidate to view details
+                 </div>
               )}
             </div>
           </div>
         </div>
       );
     }
+
+
 
     // Settings Page
     function SettingsPage() {
@@ -1821,7 +1939,7 @@
                   style={styles.input}
                   placeholder="http://localhost:8000"
                   value={settings.apiBaseUrl}
-                  onChange={(e) => setSettings({...settings, apiBaseUrl: e.target.value})}
+                  onChange={(e) => setSettings({ ...settings, apiBaseUrl: e.target.value })}
                   onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
                   onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
                 />
@@ -1837,7 +1955,7 @@
                   style={styles.input}
                   placeholder="sk-..."
                   value={settings.openaiKey}
-                  onChange={(e) => setSettings({...settings, openaiKey: e.target.value})}
+                  onChange={(e) => setSettings({ ...settings, openaiKey: e.target.value })}
                   onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
                   onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
                 />
@@ -1854,7 +1972,7 @@
                     style={styles.input}
                     placeholder="Enter key..."
                     value={settings.mistralKey}
-                    onChange={(e) => setSettings({...settings, mistralKey: e.target.value})}
+                    onChange={(e) => setSettings({ ...settings, mistralKey: e.target.value })}
                     onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
                     onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
                   />
@@ -1865,7 +1983,7 @@
                     style={styles.input}
                     placeholder="https://..."
                     value={settings.azureEndpoint}
-                    onChange={(e) => setSettings({...settings, azureEndpoint: e.target.value})}
+                    onChange={(e) => setSettings({ ...settings, azureEndpoint: e.target.value })}
                     onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
                     onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
                   />
@@ -1889,7 +2007,7 @@
                 <select
                   style={styles.select}
                   value={settings.voiceModel}
-                  onChange={(e) => setSettings({...settings, voiceModel: e.target.value})}
+                  onChange={(e) => setSettings({ ...settings, voiceModel: e.target.value })}
                 >
                   <option value="alloy">Alloy (Balanced)</option>
                   <option value="echo">Echo (Deep)</option>
@@ -1916,7 +2034,7 @@
                     position: 'relative',
                     transition: 'all 0.2s ease',
                   }}
-                  onClick={() => setSettings({...settings, autoTranscribe: !settings.autoTranscribe})}
+                  onClick={() => setSettings({ ...settings, autoTranscribe: !settings.autoTranscribe })}
                 >
                   <div style={{
                     width: '20px',
@@ -1942,11 +2060,587 @@
       );
     }
 
+    // ==================== LOGIN PAGE ====================
+    function LoginPage({ onLogin, onSwitchToRegister }) {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState(null);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        try {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            onLogin(data.user, data.token);
+          } else {
+            setError(data.message || 'Login failed');
+          }
+        } catch (err) {
+          setError('Connection error. Please try again.');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--bg-primary)',
+          backgroundImage: 'var(--gradient-mesh)',
+          padding: '20px',
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '440px',
+            animation: 'fadeInUp 0.6s ease-out',
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+                color: '#ffffff',
+              }}>
+                <Icons.Zap />
+              </div>
+              <h1 style={{ fontSize: '32px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-primary)' }}>
+                Welcome to <span style={{ color: 'var(--accent-primary)' }}>TalentFlow AI</span>
+              </h1>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>
+                Sign in to access your HR dashboard
+              </p>
+            </div>
+
+            <div style={{
+              ...styles.card,
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
+            }}>
+              <form onSubmit={handleSubmit}>
+                {error && (
+                  <div style={{
+                    padding: '12px 16px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid var(--danger)',
+                    borderRadius: '8px',
+                    color: 'var(--danger)',
+                    marginBottom: '20px',
+                    fontSize: '14px',
+                  }}>
+                    {error}
+                  </div>
+                )}
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Email Address</label>
+                  <input
+                    type="email"
+                    style={styles.input}
+                    placeholder="you@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Password</label>
+                  <input
+                    type="password"
+                    style={styles.input}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  style={{
+                    ...styles.button('primary'),
+                    width: '100%',
+                    marginTop: '8px',
+                    opacity: loading ? 0.7 : 1,
+                  }}
+                  disabled={loading}
+                >
+                  {loading ? <Spinner size={18} /> : 'Sign In'}
+                </button>
+              </form>
+
+              <div style={{
+                textAlign: 'center',
+                marginTop: '24px',
+                paddingTop: '24px',
+                borderTop: '1px solid var(--border-color)',
+              }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                  Don't have an account?{' '}
+                  <button
+                    onClick={onSwitchToRegister}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--accent-primary)',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                    }}
+                  >
+                    Create one
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==================== REGISTER PAGE ====================
+    function RegisterPage({ onRegister, onSwitchToLogin }) {
+      const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+        confirmPassword: '',
+        full_name: '',
+        role: 'candidate',
+        phone: '',
+      });
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState(null);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (formData.password !== formData.confirmPassword) {
+          setError('Passwords do not match');
+          return;
+        }
+
+        if (formData.password.length < 6) {
+          setError('Password must be at least 6 characters');
+          return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/auth/register/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: formData.email,
+              password: formData.password,
+              full_name: formData.full_name,
+              role: formData.role,
+              phone: formData.phone || null,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Auto-login after registration
+            const loginResponse = await fetch(`${API_CONFIG.BASE_URL}/auth/login/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: formData.email,
+                password: formData.password,
+              }),
+            });
+
+            const loginData = await loginResponse.json();
+            if (loginData.success) {
+              localStorage.setItem('token', loginData.token);
+              localStorage.setItem('user', JSON.stringify(loginData.user));
+              onRegister(loginData.user, loginData.token);
+            }
+          } else {
+            setError(data.message || 'Registration failed');
+          }
+        } catch (err) {
+          setError('Connection error. Please try again.');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--bg-primary)',
+          backgroundImage: 'var(--gradient-mesh)',
+          padding: '20px',
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '480px',
+            animation: 'fadeInUp 0.6s ease-out',
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+                color: '#ffffff',
+              }}>
+                <Icons.Users />
+              </div>
+              <h1 style={{ fontSize: '32px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-primary)' }}>
+                Join <span style={{ color: 'var(--accent-primary)' }}>TalentFlow AI</span>
+              </h1>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>
+                Create your account to get started
+              </p>
+            </div>
+
+            <div style={{
+              ...styles.card,
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
+            }}>
+              <form onSubmit={handleSubmit}>
+                {error && (
+                  <div style={{
+                    padding: '12px 16px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid var(--danger)',
+                    borderRadius: '8px',
+                    color: 'var(--danger)',
+                    marginBottom: '20px',
+                    fontSize: '14px',
+                  }}>
+                    {error}
+                  </div>
+                )}
+
+                {/* Role Selection */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={styles.label}>I am a...</label>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    {[
+                      { id: 'hr', label: 'HR Professional', icon: <Icons.Briefcase />, desc: 'Hire & manage talent' },
+                      { id: 'candidate', label: 'Job Candidate', icon: <Icons.Users />, desc: 'Find opportunities' },
+                    ].map((role) => (
+                      <button
+                        key={role.id}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, role: role.id })}
+                        style={{
+                          flex: 1,
+                          padding: '16px',
+                          background: formData.role === role.id ? 'var(--accent-glow)' : 'var(--bg-secondary)',
+                          border: `2px solid ${formData.role === role.id ? 'var(--accent-primary)' : 'var(--border-color)'}`,
+                          borderRadius: '12px',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <div style={{
+                          color: formData.role === role.id ? 'var(--accent-primary)' : 'var(--text-muted)',
+                          marginBottom: '8px',
+                          display: 'flex',
+                          justifyContent: 'center',
+                        }}>
+                          {role.icon}
+                        </div>
+                        <div style={{
+                          fontWeight: '600',
+                          fontSize: '14px',
+                          color: formData.role === role.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+                          marginBottom: '4px',
+                        }}>
+                          {role.label}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                          {role.desc}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Full Name</label>
+                  <input
+                    type="text"
+                    style={styles.input}
+                    placeholder="John Doe"
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    required
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Email Address</label>
+                  <input
+                    type="email"
+                    style={styles.input}
+                    placeholder="you@company.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+
+                {formData.role === 'candidate' && (
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Phone Number (Optional)</label>
+                    <input
+                      type="tel"
+                      style={styles.input}
+                      placeholder="+1 (555) 000-0000"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                      onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                    />
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Password</label>
+                    <input
+                      type="password"
+                      style={styles.input}
+                      placeholder="••••••••"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      required
+                      onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                      onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Confirm Password</label>
+                    <input
+                      type="password"
+                      style={styles.input}
+                      placeholder="••••••••"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      required
+                      onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                      onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  style={{
+                    ...styles.button('primary'),
+                    width: '100%',
+                    marginTop: '8px',
+                    opacity: loading ? 0.7 : 1,
+                  }}
+                  disabled={loading}
+                >
+                  {loading ? <Spinner size={18} /> : 'Create Account'}
+                </button>
+              </form>
+
+              <div style={{
+                textAlign: 'center',
+                marginTop: '24px',
+                paddingTop: '24px',
+                borderTop: '1px solid var(--border-color)',
+              }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                  Already have an account?{' '}
+                  <button
+                    onClick={onSwitchToLogin}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--accent-primary)',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                    }}
+                  >
+                    Sign in
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==================== CANDIDATE DASHBOARD ====================
+    function CandidateDashboard({ user }) {
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-primary)' }}>Welcome, {user.full_name}</span>
+            </h1>
+            <p style={styles.pageSubtitle}>
+              Complete your AI-powered interview to move forward in the hiring process.
+            </p>
+          </div>
+
+          <div style={{ ...styles.card, maxWidth: '600px', margin: '0 auto', textAlign: 'center' }} className="animate-in delay-1">
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '20px',
+              background: 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
+              color: '#ffffff',
+            }}>
+              <Icons.Mic />
+            </div>
+            <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '12px' }}>
+              AI Voice Interview
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', lineHeight: '1.6' }}>
+              Our AI interviewer will ask you a series of questions about your experience,
+              skills, and career goals. The interview typically takes 10-15 minutes.
+            </p>
+
+            <div style={{
+              background: 'var(--bg-secondary)',
+              borderRadius: '12px',
+              padding: '20px',
+              marginBottom: '24px',
+              textAlign: 'left',
+            }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '16px', color: 'var(--text-primary)' }}>
+                Tips for a great interview:
+              </h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {[
+                  'Find a quiet place with minimal background noise',
+                  'Speak clearly and at a natural pace',
+                  'Be specific with examples from your experience',
+                  'Take your time to think before answering',
+                ].map((tip, i) => (
+                  <li key={i} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px',
+                    marginBottom: '12px',
+                    fontSize: '14px',
+                    color: 'var(--text-secondary)',
+                  }}>
+                    <span style={{ color: 'var(--success)' }}><Icons.Check /></span>
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <button style={styles.button('primary')}>
+              <Icons.Mic /> Start Interview
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     // ==================== MAIN APP ====================
     function App() {
       const [currentPage, setCurrentPage] = useState('dashboard');
+      const [user, setUser] = useState(null);
+      const [token, setToken] = useState(null);
+      const [authPage, setAuthPage] = useState('login');
 
-      const pages = {
+      // Check for existing session on mount
+      useEffect(() => {
+        const savedToken = localStorage.getItem('token');
+        const savedUser = localStorage.getItem('user');
+
+        if (savedToken && savedUser) {
+          setToken(savedToken);
+          setUser(JSON.parse(savedUser));
+        }
+      }, []);
+
+      const handleLogin = (userData, authToken) => {
+        setUser(userData);
+        setToken(authToken);
+        setCurrentPage('dashboard');
+      };
+
+      const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        setToken(null);
+        setAuthPage('login');
+      };
+
+      // If not logged in, show login/register pages
+      if (!user) {
+        if (authPage === 'login') {
+          return (
+            <LoginPage
+              onLogin={handleLogin}
+              onSwitchToRegister={() => setAuthPage('register')}
+            />
+          );
+        } else {
+          return (
+            <RegisterPage
+              onRegister={handleLogin}
+              onSwitchToLogin={() => setAuthPage('login')}
+            />
+          );
+        }
+      }
+
+      // Role-based page access
+      const isHR = user.role === 'hr';
+
+      const hrPages = {
         dashboard: DashboardPage,
         resume: ResumeScorePage,
         jd: JDGeneratorPage,
@@ -1955,7 +2649,29 @@
         settings: SettingsPage,
       };
 
-      const PageComponent = pages[currentPage];
+      const candidatePages = {
+        dashboard: () => <CandidateDashboard user={user} />,
+        voice: VoiceAgentPage,
+        settings: SettingsPage,
+      };
+
+      const pages = isHR ? hrPages : candidatePages;
+      const PageComponent = pages[currentPage] || pages.dashboard;
+
+      // Navigation items based on role
+      const hrNavItems = [
+        { id: 'dashboard', label: 'Dashboard' },
+        { id: 'resume', label: 'Resume Scoring' },
+        { id: 'jd', label: 'JD Generator' },
+        { id: 'candidates', label: 'Candidates' },
+      ];
+
+      const candidateNavItems = [
+        { id: 'dashboard', label: 'Dashboard' },
+        { id: 'voice', label: 'Interview' },
+      ];
+
+      const navItems = isHR ? hrNavItems : candidateNavItems;
 
       return (
         <div style={styles.container}>
@@ -1966,14 +2682,9 @@
               </div>
               <span>TalentFlow<span style={{ color: 'var(--accent-primary)' }}>AI</span></span>
             </div>
+
             <nav style={styles.nav}>
-              {[
-                { id: 'dashboard', label: 'Dashboard' },
-                { id: 'resume', label: 'Resume Scoring' },
-                { id: 'jd', label: 'JD Generator' },
-                { id: 'voice', label: 'Voice Agent' },
-                { id: 'candidates', label: 'Candidates' },
-              ].map((item) => (
+              {navItems.map((item) => (
                 <button
                   key={item.id}
                   style={styles.navButton(currentPage === item.id)}
@@ -1993,12 +2704,62 @@
                 </button>
               ))}
             </nav>
-            <button
-              style={{ ...styles.navButton(currentPage === 'settings'), padding: '10px' }}
-              onClick={() => setCurrentPage('settings')}
-            >
-              <Icons.Settings />
-            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {/* User info */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '6px 12px',
+                background: 'var(--bg-tertiary)',
+                borderRadius: '8px',
+              }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  background: isHR
+                    ? 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%)'
+                    : 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-orange) 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                }}>
+                  {user.full_name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' }}>
+                    {user.full_name}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    {user.role}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                style={{ ...styles.navButton(currentPage === 'settings'), padding: '10px' }}
+                onClick={() => setCurrentPage('settings')}
+              >
+                <Icons.Settings />
+              </button>
+
+              <button
+                onClick={handleLogout}
+                style={{
+                  ...styles.navButton(false),
+                  padding: '10px',
+                  color: 'var(--danger)',
+                }}
+                title="Logout"
+              >
+                <Icons.X />
+              </button>
+            </div>
           </header>
 
           <main style={styles.main}>
@@ -2021,4 +2782,5 @@
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
+
 </html>
