@@ -1,0 +1,2055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TalentFlow AI - Intelligent HR Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0a0a0b;
+      --bg-secondary: #111113;
+      --bg-tertiary: #1a1a1d;
+      --bg-card: #161618;
+      --border-color: #2a2a2d;
+      --border-hover: #3a3a3d;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1a6;
+      --text-muted: #6e6e73;
+      --accent-primary: #00d4aa;
+      --accent-secondary: #00b894;
+      --accent-glow: rgba(0, 212, 170, 0.15);
+      --accent-blue: #5b8def;
+      --accent-purple: #a78bfa;
+      --accent-orange: #fb923c;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --warning: #eab308;
+      --gradient-mesh: radial-gradient(ellipse at 20% 0%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),
+                       radial-gradient(ellipse at 80% 100%, rgba(91, 141, 239, 0.06) 0%, transparent 50%);
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .serif {
+      font-family: 'Instrument Serif', Georgia, serif;
+    }
+
+    #root {
+      min-height: 100vh;
+    }
+
+    ::selection {
+      background: var(--accent-primary);
+      color: var(--bg-primary);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--border-hover);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes ripple {
+      0% {
+        transform: scale(1);
+        opacity: 0.4;
+      }
+      100% {
+        transform: scale(2.5);
+        opacity: 0;
+      }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes waveform {
+      0%, 100% { height: 8px; }
+      50% { height: 24px; }
+    }
+
+    .animate-in {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    // ==================== ICONS ====================
+    const Icons = {
+      Briefcase: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+      ),
+      FileText: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14,2 14,8 20,8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10,9 9,9 8,9"/>
+        </svg>
+      ),
+      Phone: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+      ),
+      Users: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      ),
+      Upload: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17,8 12,3 7,8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      ),
+      Mic: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      ),
+      MicOff: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="1" y1="1" x2="23" y2="23"/>
+          <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+          <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      ),
+      PhoneCall: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+      ),
+      PhoneOff: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/>
+          <line x1="23" y1="1" x2="1" y2="23"/>
+        </svg>
+      ),
+      Search: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      ),
+      Check: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20,6 9,17 4,12"/>
+        </svg>
+      ),
+      X: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      ),
+      ChevronRight: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9,18 15,12 9,6"/>
+        </svg>
+      ),
+      Sparkles: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
+        </svg>
+      ),
+      BarChart: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="20" x2="12" y2="10"/>
+          <line x1="18" y1="20" x2="18" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="16"/>
+        </svg>
+      ),
+      Settings: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      ),
+      Globe: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      ),
+      Award: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="7"/>
+          <polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88"/>
+        </svg>
+      ),
+      Zap: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+        </svg>
+      ),
+      Play: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="5,3 19,12 5,21 5,3"/>
+        </svg>
+      ),
+      Pause: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="6" y="4" width="4" height="16"/>
+          <rect x="14" y="4" width="4" height="16"/>
+        </svg>
+      ),
+      Copy: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+      ),
+      Download: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7,10 12,15 17,10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      ),
+      Linkedin: () => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+          <rect x="2" y="9" width="4" height="12"/>
+          <circle cx="4" cy="4" r="2"/>
+        </svg>
+      )
+    };
+
+    // ==================== STYLES ====================
+    const styles = {
+      container: {
+        minHeight: '100vh',
+        background: 'var(--bg-primary)',
+        backgroundImage: 'var(--gradient-mesh)',
+        backgroundAttachment: 'fixed',
+      },
+      header: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        padding: '16px 32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: 'rgba(10, 10, 11, 0.8)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid var(--border-color)',
+        zIndex: 1000,
+      },
+      logo: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        fontSize: '20px',
+        fontWeight: '600',
+        color: 'var(--text-primary)',
+      },
+      logoIcon: {
+        width: '36px',
+        height: '36px',
+        borderRadius: '10px',
+        background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--bg-primary)',
+      },
+      nav: {
+        display: 'flex',
+        gap: '8px',
+      },
+      navButton: (active) => ({
+        padding: '10px 20px',
+        fontSize: '14px',
+        fontWeight: '500',
+        color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+        background: active ? 'var(--bg-tertiary)' : 'transparent',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }),
+      main: {
+        paddingTop: '100px',
+        paddingBottom: '60px',
+        maxWidth: '1400px',
+        margin: '0 auto',
+        padding: '100px 32px 60px',
+      },
+      pageHeader: {
+        marginBottom: '48px',
+        opacity: 0,
+        animation: 'fadeInUp 0.6s ease-out forwards',
+      },
+      pageTitle: {
+        fontSize: '48px',
+        fontWeight: '400',
+        marginBottom: '12px',
+        lineHeight: '1.1',
+      },
+      pageSubtitle: {
+        fontSize: '18px',
+        color: 'var(--text-secondary)',
+        maxWidth: '600px',
+      },
+      grid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+        gap: '24px',
+      },
+      card: {
+        background: 'var(--bg-card)',
+        borderRadius: '16px',
+        border: '1px solid var(--border-color)',
+        padding: '32px',
+        transition: 'all 0.3s ease',
+      },
+      cardHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        marginBottom: '24px',
+      },
+      cardIcon: (color) => ({
+        width: '48px',
+        height: '48px',
+        borderRadius: '12px',
+        background: `linear-gradient(135deg, ${color}20 0%, ${color}10 100%)`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: color,
+      }),
+      cardTitle: {
+        fontSize: '20px',
+        fontWeight: '600',
+        marginBottom: '4px',
+      },
+      cardDescription: {
+        fontSize: '14px',
+        color: 'var(--text-secondary)',
+      },
+      formGroup: {
+        marginBottom: '20px',
+      },
+      label: {
+        display: 'block',
+        fontSize: '13px',
+        fontWeight: '500',
+        color: 'var(--text-secondary)',
+        marginBottom: '8px',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+      },
+      input: {
+        width: '100%',
+        padding: '14px 16px',
+        fontSize: '15px',
+        color: 'var(--text-primary)',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '10px',
+        outline: 'none',
+        transition: 'all 0.2s ease',
+        fontFamily: 'inherit',
+      },
+      textarea: {
+        width: '100%',
+        padding: '14px 16px',
+        fontSize: '15px',
+        color: 'var(--text-primary)',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '10px',
+        outline: 'none',
+        transition: 'all 0.2s ease',
+        resize: 'vertical',
+        minHeight: '120px',
+        fontFamily: 'inherit',
+      },
+      select: {
+        width: '100%',
+        padding: '14px 16px',
+        fontSize: '15px',
+        color: 'var(--text-primary)',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '10px',
+        outline: 'none',
+        cursor: 'pointer',
+        appearance: 'none',
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23a1a1a6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right 16px center',
+      },
+      button: (variant = 'primary') => ({
+        padding: '14px 28px',
+        fontSize: '15px',
+        fontWeight: '600',
+        color: variant === 'primary' ? 'var(--bg-primary)' : 'var(--text-primary)',
+        background: variant === 'primary' 
+          ? 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)'
+          : 'var(--bg-tertiary)',
+        border: variant === 'primary' ? 'none' : '1px solid var(--border-color)',
+        borderRadius: '10px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        fontFamily: 'inherit',
+      }),
+      dropzone: (isDragActive) => ({
+        padding: '40px',
+        border: `2px dashed ${isDragActive ? 'var(--accent-primary)' : 'var(--border-color)'}`,
+        borderRadius: '12px',
+        background: isDragActive ? 'var(--accent-glow)' : 'var(--bg-secondary)',
+        textAlign: 'center',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }),
+      resultCard: {
+        background: 'var(--bg-secondary)',
+        borderRadius: '12px',
+        padding: '24px',
+        marginTop: '24px',
+        border: '1px solid var(--border-color)',
+      },
+      scoreCircle: (score) => {
+        const color = score >= 70 ? 'var(--success)' : score >= 40 ? 'var(--warning)' : 'var(--danger)';
+        return {
+          width: '120px',
+          height: '120px',
+          borderRadius: '50%',
+          background: `conic-gradient(${color} ${score * 3.6}deg, var(--bg-tertiary) 0deg)`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 20px',
+          position: 'relative',
+        };
+      },
+      scoreInner: {
+        width: '100px',
+        height: '100px',
+        borderRadius: '50%',
+        background: 'var(--bg-secondary)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+      },
+      voiceAgent: {
+        textAlign: 'center',
+        padding: '40px',
+      },
+      voiceCircle: (isActive) => ({
+        width: '180px',
+        height: '180px',
+        borderRadius: '50%',
+        background: isActive 
+          ? 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%)'
+          : 'var(--bg-tertiary)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: '0 auto 32px',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        position: 'relative',
+        boxShadow: isActive ? '0 0 60px var(--accent-glow)' : 'none',
+      }),
+      waveformContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '4px',
+        height: '40px',
+      },
+      waveformBar: (index, isActive) => ({
+        width: '4px',
+        height: isActive ? '24px' : '8px',
+        background: isActive ? 'var(--accent-primary)' : 'var(--text-muted)',
+        borderRadius: '2px',
+        transition: 'height 0.1s ease',
+        animation: isActive ? `waveform 0.5s ease-in-out ${index * 0.1}s infinite` : 'none',
+      }),
+      transcript: {
+        maxHeight: '300px',
+        overflowY: 'auto',
+        padding: '20px',
+        background: 'var(--bg-secondary)',
+        borderRadius: '12px',
+        marginTop: '24px',
+        textAlign: 'left',
+      },
+      transcriptMessage: (role) => ({
+        marginBottom: '16px',
+        padding: '12px 16px',
+        borderRadius: '12px',
+        background: role === 'assistant' ? 'var(--bg-tertiary)' : 'var(--accent-glow)',
+        borderLeft: `3px solid ${role === 'assistant' ? 'var(--accent-blue)' : 'var(--accent-primary)'}`,
+      }),
+      tag: (color) => ({
+        display: 'inline-block',
+        padding: '4px 12px',
+        fontSize: '12px',
+        fontWeight: '600',
+        color: color,
+        background: `${color}15`,
+        borderRadius: '20px',
+        marginRight: '8px',
+        marginBottom: '8px',
+      }),
+      tabs: {
+        display: 'flex',
+        gap: '4px',
+        marginBottom: '24px',
+        background: 'var(--bg-secondary)',
+        padding: '4px',
+        borderRadius: '10px',
+        width: 'fit-content',
+      },
+      tab: (active) => ({
+        padding: '10px 20px',
+        fontSize: '14px',
+        fontWeight: '500',
+        color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+        background: active ? 'var(--bg-tertiary)' : 'transparent',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }),
+      statusBadge: (status) => {
+        const colors = {
+          pending: 'var(--warning)',
+          completed: 'var(--success)',
+          failed: 'var(--danger)',
+          active: 'var(--accent-primary)',
+        };
+        return {
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          fontSize: '12px',
+          fontWeight: '600',
+          color: colors[status] || 'var(--text-secondary)',
+          background: `${colors[status] || 'var(--text-secondary)'}15`,
+          borderRadius: '20px',
+        };
+      },
+      candidateCard: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        padding: '16px',
+        background: 'var(--bg-secondary)',
+        borderRadius: '12px',
+        marginBottom: '12px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        border: '1px solid transparent',
+      },
+      avatar: {
+        width: '48px',
+        height: '48px',
+        borderRadius: '12px',
+        background: 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        fontWeight: '600',
+        fontSize: '18px',
+      },
+      progressBar: {
+        width: '100%',
+        height: '6px',
+        background: 'var(--bg-tertiary)',
+        borderRadius: '3px',
+        overflow: 'hidden',
+      },
+      progressFill: (percent, color = 'var(--accent-primary)') => ({
+        width: `${percent}%`,
+        height: '100%',
+        background: color,
+        borderRadius: '3px',
+        transition: 'width 0.5s ease',
+      }),
+      configSection: {
+        background: 'var(--bg-secondary)',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '20px',
+      },
+      configTitle: {
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'var(--text-primary)',
+        marginBottom: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+      },
+      codeBlock: {
+        background: 'var(--bg-primary)',
+        padding: '16px',
+        borderRadius: '8px',
+        fontFamily: 'Monaco, Consolas, monospace',
+        fontSize: '13px',
+        color: 'var(--accent-primary)',
+        overflow: 'auto',
+        marginTop: '12px',
+      }
+    };
+
+    // ==================== API CONFIG ====================
+    const API_CONFIG = {
+      BASE_URL: 'http://localhost:8000',  // Update this to your API URL
+      OPENAI_REALTIME_URL: 'wss://api.openai.com/v1/realtime',
+    };
+
+    // ==================== COMPONENTS ====================
+
+    // Tab Component
+    function Tabs({ tabs, activeTab, onChange }) {
+      return (
+        <div style={styles.tabs}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              style={styles.tab(activeTab === tab.id)}
+              onClick={() => onChange(tab.id)}
+              onMouseEnter={(e) => {
+                if (activeTab !== tab.id) {
+                  e.target.style.color = 'var(--text-primary)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== tab.id) {
+                  e.target.style.color = 'var(--text-secondary)';
+                }
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    // Loading Spinner
+    function Spinner({ size = 20 }) {
+      return (
+        <div style={{
+          width: size,
+          height: size,
+          border: '2px solid var(--bg-tertiary)',
+          borderTopColor: 'var(--accent-primary)',
+          borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite',
+        }}>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      );
+    }
+
+    // Waveform Visualizer
+    function Waveform({ isActive, bars = 12 }) {
+      return (
+        <div style={styles.waveformContainer}>
+          {Array.from({ length: bars }).map((_, i) => (
+            <div key={i} style={styles.waveformBar(i, isActive)} />
+          ))}
+        </div>
+      );
+    }
+
+    // Score Circle
+    function ScoreCircle({ score }) {
+      const color = score >= 70 ? 'var(--success)' : score >= 40 ? 'var(--warning)' : 'var(--danger)';
+      return (
+        <div style={styles.scoreCircle(score)}>
+          <div style={styles.scoreInner}>
+            <span style={{ fontSize: '32px', fontWeight: '700', color }}>{score.toFixed(0)}</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>/ 100</span>
+          </div>
+        </div>
+      );
+    }
+
+    // ==================== PAGES ====================
+
+    // Dashboard Page
+    function DashboardPage() {
+      const stats = [
+        { label: 'Resumes Scored', value: '1,247', change: '+12%', icon: <Icons.FileText /> },
+        { label: 'JDs Generated', value: '89', change: '+8%', icon: <Icons.Briefcase /> },
+        { label: 'Voice Interviews', value: '234', change: '+24%', icon: <Icons.Phone /> },
+        { label: 'Candidates Shortlisted', value: '456', change: '+15%', icon: <Icons.Users /> },
+      ];
+
+      const recentActivity = [
+        { type: 'score', title: 'Resume scored', candidate: 'John Smith', score: 85, time: '2 min ago' },
+        { type: 'jd', title: 'JD generated', role: 'Senior Python Developer', time: '15 min ago' },
+        { type: 'call', title: 'Interview completed', candidate: 'Sarah Johnson', score: 78, time: '1 hour ago' },
+        { type: 'score', title: 'Resume scored', candidate: 'Mike Chen', score: 92, time: '2 hours ago' },
+      ];
+
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-primary)' }}>Welcome back</span>
+            </h1>
+            <p style={styles.pageSubtitle}>
+              Your AI-powered recruitment dashboard. Here's what's happening today.
+            </p>
+          </div>
+
+          <div style={{ ...styles.grid, gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: '32px' }}>
+            {stats.map((stat, i) => (
+              <div 
+                key={stat.label} 
+                style={{ ...styles.card, opacity: 0 }}
+                className={`animate-in delay-${i + 1}`}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border-hover)';
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                  <div style={{ color: 'var(--text-muted)' }}>{stat.icon}</div>
+                  <span style={{ 
+                    fontSize: '12px', 
+                    fontWeight: '600', 
+                    color: 'var(--success)',
+                    background: 'rgba(34, 197, 94, 0.1)',
+                    padding: '4px 8px',
+                    borderRadius: '4px'
+                  }}>{stat.change}</span>
+                </div>
+                <div style={{ fontSize: '36px', fontWeight: '700', marginBottom: '4px' }}>{stat.value}</div>
+                <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={styles.grid}>
+            <div style={styles.card} className="animate-in delay-2">
+              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Recent Activity</h3>
+              {recentActivity.map((activity, i) => (
+                <div 
+                  key={i} 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '16px',
+                    padding: '12px 0',
+                    borderBottom: i < recentActivity.length - 1 ? '1px solid var(--border-color)' : 'none'
+                  }}
+                >
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    background: activity.type === 'score' ? 'rgba(0, 212, 170, 0.1)' 
+                      : activity.type === 'jd' ? 'rgba(91, 141, 239, 0.1)' 
+                      : 'rgba(167, 139, 250, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: activity.type === 'score' ? 'var(--accent-primary)' 
+                      : activity.type === 'jd' ? 'var(--accent-blue)' 
+                      : 'var(--accent-purple)',
+                  }}>
+                    {activity.type === 'score' ? <Icons.FileText /> : activity.type === 'jd' ? <Icons.Briefcase /> : <Icons.Phone />}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '500', marginBottom: '2px' }}>{activity.title}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                      {activity.candidate || activity.role}
+                    </div>
+                  </div>
+                  {activity.score && (
+                    <div style={{ 
+                      padding: '4px 12px', 
+                      borderRadius: '20px', 
+                      background: activity.score >= 70 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(234, 179, 8, 0.1)',
+                      color: activity.score >= 70 ? 'var(--success)' : 'var(--warning)',
+                      fontWeight: '600',
+                      fontSize: '13px'
+                    }}>
+                      {activity.score}%
+                    </div>
+                  )}
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{activity.time}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={styles.card} className="animate-in delay-3">
+              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Quick Actions</h3>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {[
+                  { icon: <Icons.FileText />, label: 'Score Resume', desc: 'Analyze candidate fit', color: 'var(--accent-primary)' },
+                  { icon: <Icons.Briefcase />, label: 'Create JD', desc: 'Generate job description', color: 'var(--accent-blue)' },
+                  { icon: <Icons.Phone />, label: 'Voice Interview', desc: 'Start AI screening call', color: 'var(--accent-purple)' },
+                  { icon: <Icons.Users />, label: 'Review Candidates', desc: 'View shortlisted pool', color: 'var(--accent-orange)' },
+                ].map((action) => (
+                  <div 
+                    key={action.label}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      padding: '16px',
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      border: '1px solid transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = action.color;
+                      e.currentTarget.style.background = `${action.color}08`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'transparent';
+                      e.currentTarget.style.background = 'var(--bg-secondary)';
+                    }}
+                  >
+                    <div style={{ color: action.color }}>{action.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '500' }}>{action.label}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{action.desc}</div>
+                    </div>
+                    <Icons.ChevronRight />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Resume Scoring Page
+    function ResumeScorePage() {
+      const [jobDescription, setJobDescription] = useState('');
+      const [resumeFile, setResumeFile] = useState(null);
+      const [isDragActive, setIsDragActive] = useState(false);
+      const [loading, setLoading] = useState(false);
+      const [result, setResult] = useState(null);
+      const [error, setError] = useState(null);
+      const fileInputRef = useRef(null);
+
+      const handleDrop = useCallback((e) => {
+        e.preventDefault();
+        setIsDragActive(false);
+        const file = e.dataTransfer.files[0];
+        if (file && (file.name.endsWith('.pdf') || file.name.endsWith('.docx'))) {
+          setResumeFile(file);
+        }
+      }, []);
+
+      const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) setResumeFile(file);
+      };
+
+      const handleSubmit = async () => {
+        if (!jobDescription || !resumeFile) return;
+        
+        setLoading(true);
+        setError(null);
+        setResult(null);
+
+        try {
+          const formData = new FormData();
+          formData.append('job_description', jobDescription);
+          formData.append('resume_file', resumeFile);
+
+          const response = await fetch(`${API_CONFIG.BASE_URL}/score_resume/`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to score resume');
+          }
+
+          const data = await response.json();
+          setResult(data);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-primary)' }}>Resume</span> Scoring
+            </h1>
+            <p style={styles.pageSubtitle}>
+              Upload a resume and job description to get an AI-powered compatibility score with detailed analysis.
+            </p>
+          </div>
+
+          <div style={styles.grid}>
+            <div style={styles.card} className="animate-in delay-1">
+              <div style={styles.cardHeader}>
+                <div style={styles.cardIcon('var(--accent-primary)')}>
+                  <Icons.FileText />
+                </div>
+                <div>
+                  <h3 style={styles.cardTitle}>Job Description</h3>
+                  <p style={styles.cardDescription}>Paste or enter the job requirements</p>
+                </div>
+              </div>
+              
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Job Description *</label>
+                <textarea
+                  style={styles.textarea}
+                  placeholder="Enter the complete job description including requirements, responsibilities, and qualifications..."
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Resume File *</label>
+                <div
+                  style={styles.dropzone(isDragActive)}
+                  onDragOver={(e) => { e.preventDefault(); setIsDragActive(true); }}
+                  onDragLeave={() => setIsDragActive(false)}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.docx"
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }}
+                  />
+                  {resumeFile ? (
+                    <div>
+                      <div style={{ color: 'var(--success)', marginBottom: '8px' }}>
+                        <Icons.Check />
+                      </div>
+                      <div style={{ fontWeight: '500' }}>{resumeFile.name}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                        Click to replace
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ color: 'var(--text-muted)', marginBottom: '12px' }}>
+                        <Icons.Upload />
+                      </div>
+                      <div style={{ fontWeight: '500', marginBottom: '4px' }}>
+                        Drop your resume here or click to browse
+                      </div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                        Supports PDF and DOCX files
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <button
+                style={{
+                  ...styles.button('primary'),
+                  width: '100%',
+                  opacity: (!jobDescription || !resumeFile || loading) ? 0.5 : 1,
+                  cursor: (!jobDescription || !resumeFile || loading) ? 'not-allowed' : 'pointer',
+                }}
+                onClick={handleSubmit}
+                disabled={!jobDescription || !resumeFile || loading}
+                onMouseEnter={(e) => {
+                  if (!loading && jobDescription && resumeFile) {
+                    e.target.style.transform = 'translateY(-2px)';
+                  }
+                }}
+                onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+              >
+                {loading ? <Spinner size={18} /> : <Icons.Sparkles />}
+                {loading ? 'Analyzing...' : 'Score Resume'}
+              </button>
+
+              {error && (
+                <div style={{ 
+                  marginTop: '16px', 
+                  padding: '12px 16px', 
+                  background: 'rgba(239, 68, 68, 0.1)', 
+                  borderRadius: '8px',
+                  color: 'var(--danger)',
+                  fontSize: '14px'
+                }}>
+                  {error}
+                </div>
+              )}
+            </div>
+
+            <div style={styles.card} className="animate-in delay-2">
+              <div style={styles.cardHeader}>
+                <div style={styles.cardIcon('var(--accent-blue)')}>
+                  <Icons.BarChart />
+                </div>
+                <div>
+                  <h3 style={styles.cardTitle}>Score Analysis</h3>
+                  <p style={styles.cardDescription}>AI-powered compatibility assessment</p>
+                </div>
+              </div>
+
+              {result ? (
+                <div>
+                  <ScoreCircle score={result.score} />
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
+                      {result.score >= 70 ? 'Strong Match' : result.score >= 40 ? 'Moderate Match' : 'Weak Match'}
+                    </div>
+                    <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                      Based on job requirements analysis
+                    </div>
+                  </div>
+                  <div style={styles.resultCard}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Detailed Explanation
+                    </div>
+                    <p style={{ fontSize: '14px', lineHeight: '1.7', color: 'var(--text-primary)' }}>
+                      {result.explanation}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                  <div style={{ marginBottom: '16px', opacity: 0.5 }}>
+                    <Icons.BarChart />
+                  </div>
+                  <p>Upload a resume to see the analysis</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Job Description Generator Page
+    function JDGeneratorPage() {
+      const [formData, setFormData] = useState({
+        job_title: '',
+        company_name: '',
+        key_responsibilities: '',
+        required_skills: '',
+        experience_level: '',
+        location: '',
+        extra_details: '',
+      });
+      const [loading, setLoading] = useState(false);
+      const [result, setResult] = useState(null);
+      const [error, setError] = useState(null);
+      const [copied, setCopied] = useState(false);
+
+      const handleChange = (field, value) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+      };
+
+      const handleSubmit = async () => {
+        if (!formData.job_title || !formData.company_name) return;
+
+        setLoading(true);
+        setError(null);
+
+        try {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/create_job_description/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
+          });
+
+          if (!response.ok) throw new Error('Failed to generate job description');
+
+          const data = await response.json();
+          setResult(data.job_description);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handleCopy = () => {
+        navigator.clipboard.writeText(result);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      };
+
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-blue)' }}>JD</span> Generator
+            </h1>
+            <p style={styles.pageSubtitle}>
+              Create professional, engaging job descriptions in seconds with AI-powered generation.
+            </p>
+          </div>
+
+          <div style={styles.grid}>
+            <div style={styles.card} className="animate-in delay-1">
+              <div style={styles.cardHeader}>
+                <div style={styles.cardIcon('var(--accent-blue)')}>
+                  <Icons.Briefcase />
+                </div>
+                <div>
+                  <h3 style={styles.cardTitle}>Role Details</h3>
+                  <p style={styles.cardDescription}>Enter the job specifications</p>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Job Title *</label>
+                  <input
+                    style={styles.input}
+                    placeholder="e.g., Senior Python Developer"
+                    value={formData.job_title}
+                    onChange={(e) => handleChange('job_title', e.target.value)}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-blue)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Company Name *</label>
+                  <input
+                    style={styles.input}
+                    placeholder="e.g., Innovatech Solutions"
+                    value={formData.company_name}
+                    onChange={(e) => handleChange('company_name', e.target.value)}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-blue)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Experience Level</label>
+                  <select
+                    style={styles.select}
+                    value={formData.experience_level}
+                    onChange={(e) => handleChange('experience_level', e.target.value)}
+                  >
+                    <option value="">Select level</option>
+                    <option value="Entry Level (0-2 years)">Entry Level (0-2 years)</option>
+                    <option value="Mid Level (2-5 years)">Mid Level (2-5 years)</option>
+                    <option value="Senior Level (5-8 years)">Senior Level (5-8 years)</option>
+                    <option value="Lead/Principal (8+ years)">Lead/Principal (8+ years)</option>
+                  </select>
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Location</label>
+                  <input
+                    style={styles.input}
+                    placeholder="e.g., Remote, Bangalore, Hybrid"
+                    value={formData.location}
+                    onChange={(e) => handleChange('location', e.target.value)}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-blue)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Key Responsibilities</label>
+                <textarea
+                  style={{ ...styles.textarea, minHeight: '100px' }}
+                  placeholder="List the main responsibilities separated by semicolons or commas..."
+                  value={formData.key_responsibilities}
+                  onChange={(e) => handleChange('key_responsibilities', e.target.value)}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--accent-blue)'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Required Skills</label>
+                <textarea
+                  style={{ ...styles.textarea, minHeight: '100px' }}
+                  placeholder="List required skills separated by semicolons or commas..."
+                  value={formData.required_skills}
+                  onChange={(e) => handleChange('required_skills', e.target.value)}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--accent-blue)'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Additional Details</label>
+                <textarea
+                  style={{ ...styles.textarea, minHeight: '80px' }}
+                  placeholder="Any other requirements or preferences..."
+                  value={formData.extra_details}
+                  onChange={(e) => handleChange('extra_details', e.target.value)}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--accent-blue)'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                />
+              </div>
+
+              <button
+                style={{
+                  ...styles.button('primary'),
+                  width: '100%',
+                  background: 'linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%)',
+                  opacity: (!formData.job_title || !formData.company_name || loading) ? 0.5 : 1,
+                  cursor: (!formData.job_title || !formData.company_name || loading) ? 'not-allowed' : 'pointer',
+                }}
+                onClick={handleSubmit}
+                disabled={!formData.job_title || !formData.company_name || loading}
+              >
+                {loading ? <Spinner size={18} /> : <Icons.Sparkles />}
+                {loading ? 'Generating...' : 'Generate Job Description'}
+              </button>
+
+              {error && (
+                <div style={{ 
+                  marginTop: '16px', 
+                  padding: '12px 16px', 
+                  background: 'rgba(239, 68, 68, 0.1)', 
+                  borderRadius: '8px',
+                  color: 'var(--danger)',
+                  fontSize: '14px'
+                }}>
+                  {error}
+                </div>
+              )}
+            </div>
+
+            <div style={styles.card} className="animate-in delay-2">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div style={styles.cardHeader}>
+                  <div style={styles.cardIcon('var(--accent-purple)')}>
+                    <Icons.FileText />
+                  </div>
+                  <div>
+                    <h3 style={styles.cardTitle}>Generated JD</h3>
+                    <p style={styles.cardDescription}>Your professional job description</p>
+                  </div>
+                </div>
+                {result && (
+                  <button
+                    style={{ ...styles.button('secondary'), padding: '10px 16px' }}
+                    onClick={handleCopy}
+                  >
+                    {copied ? <Icons.Check /> : <Icons.Copy />}
+                    {copied ? 'Copied!' : 'Copy'}
+                  </button>
+                )}
+              </div>
+
+              {result ? (
+                <div style={{ 
+                  background: 'var(--bg-secondary)', 
+                  borderRadius: '12px', 
+                  padding: '24px',
+                  maxHeight: '600px',
+                  overflow: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  fontSize: '14px',
+                  lineHeight: '1.8',
+                }}>
+                  {result}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                  <div style={{ marginBottom: '16px', opacity: 0.5 }}>
+                    <Icons.FileText />
+                  </div>
+                  <p>Fill in the details to generate a job description</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Voice Agent Page
+    function VoiceAgentPage() {
+      const [isConnected, setIsConnected] = useState(false);
+      const [isListening, setIsListening] = useState(false);
+      const [isSpeaking, setIsSpeaking] = useState(false);
+      const [transcript, setTranscript] = useState([]);
+      const [candidateInfo, setCandidateInfo] = useState({ name: '', phone: '', resume: null });
+      const [apiKey, setApiKey] = useState('');
+      const [showConfig, setShowConfig] = useState(true);
+
+      const handleStartCall = () => {
+        if (!apiKey) {
+          alert('Please enter your OpenAI API key');
+          return;
+        }
+        setIsConnected(true);
+        setShowConfig(false);
+        // Simulate conversation start
+        setTimeout(() => {
+          setTranscript([
+            { role: 'assistant', content: 'Hello! This is the AI interviewer from TalentFlow. Thank you for taking the time to speak with me today. How are you doing?' }
+          ]);
+        }, 1000);
+      };
+
+      const handleEndCall = () => {
+        setIsConnected(false);
+        setIsListening(false);
+        setIsSpeaking(false);
+      };
+
+      const toggleMic = () => {
+        setIsListening(!isListening);
+        if (!isListening) {
+          // Simulate AI response
+          setTimeout(() => {
+            setTranscript(prev => [...prev, 
+              { role: 'user', content: "I'm doing well, thank you for asking. I'm excited about this opportunity." },
+              { role: 'assistant', content: "That's great to hear! Let me start by asking you about your experience. Can you tell me about your most recent project and the technologies you used?" }
+            ]);
+          }, 2000);
+        }
+      };
+
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-purple)' }}>Voice</span> Interview Agent
+            </h1>
+            <p style={styles.pageSubtitle}>
+              AI-powered voice screening calls that evaluate candidates and generate detailed reports.
+            </p>
+          </div>
+
+          <div style={styles.grid}>
+            <div style={styles.card} className="animate-in delay-1">
+              {showConfig && !isConnected ? (
+                <>
+                  <div style={styles.cardHeader}>
+                    <div style={styles.cardIcon('var(--accent-purple)')}>
+                      <Icons.Settings />
+                    </div>
+                    <div>
+                      <h3 style={styles.cardTitle}>Call Configuration</h3>
+                      <p style={styles.cardDescription}>Set up the voice interview</p>
+                    </div>
+                  </div>
+
+                  <div style={styles.configSection}>
+                    <div style={styles.configTitle}>
+                      <Icons.Zap /> OpenAI Realtime API
+                    </div>
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>API Key</label>
+                      <input
+                        type="password"
+                        style={styles.input}
+                        placeholder="sk-..."
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        onFocus={(e) => e.target.style.borderColor = 'var(--accent-purple)'}
+                        onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={styles.configSection}>
+                    <div style={styles.configTitle}>
+                      <Icons.Users /> Candidate Information
+                    </div>
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>Candidate Name</label>
+                      <input
+                        style={styles.input}
+                        placeholder="Enter candidate name"
+                        value={candidateInfo.name}
+                        onChange={(e) => setCandidateInfo({...candidateInfo, name: e.target.value})}
+                        onFocus={(e) => e.target.style.borderColor = 'var(--accent-purple)'}
+                        onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                      />
+                    </div>
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>Phone Number (Optional)</label>
+                      <input
+                        style={styles.input}
+                        placeholder="+91 ..."
+                        value={candidateInfo.phone}
+                        onChange={(e) => setCandidateInfo({...candidateInfo, phone: e.target.value})}
+                        onFocus={(e) => e.target.style.borderColor = 'var(--accent-purple)'}
+                        onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    style={{
+                      ...styles.button('primary'),
+                      width: '100%',
+                      background: 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%)',
+                    }}
+                    onClick={handleStartCall}
+                  >
+                    <Icons.PhoneCall /> Start Voice Interview
+                  </button>
+                </>
+              ) : (
+                <div style={styles.voiceAgent}>
+                  <div 
+                    style={styles.voiceCircle(isListening)}
+                    onClick={toggleMic}
+                  >
+                    {isConnected && (
+                      <div style={{
+                        position: 'absolute',
+                        inset: '-4px',
+                        borderRadius: '50%',
+                        border: '2px solid var(--accent-primary)',
+                        opacity: isListening ? 1 : 0,
+                        animation: isListening ? 'ripple 1.5s infinite' : 'none',
+                      }} />
+                    )}
+                    <div style={{ color: isListening ? 'var(--bg-primary)' : 'var(--text-primary)', transform: 'scale(2)' }}>
+                      {isListening ? <Icons.Mic /> : <Icons.MicOff />}
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '24px' }}>
+                    <Waveform isActive={isListening || isSpeaking} bars={16} />
+                  </div>
+
+                  <div style={{ marginBottom: '24px' }}>
+                    <span style={styles.statusBadge(isListening ? 'active' : 'pending')}>
+                      <span style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: 'currentColor',
+                        animation: isListening ? 'pulse 1s infinite' : 'none',
+                      }} />
+                      {isListening ? 'Listening...' : isConnected ? 'Click mic to speak' : 'Not connected'}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                    <button
+                      style={styles.button('secondary')}
+                      onClick={toggleMic}
+                    >
+                      {isListening ? <Icons.Pause /> : <Icons.Play />}
+                      {isListening ? 'Pause' : 'Resume'}
+                    </button>
+                    <button
+                      style={{ ...styles.button('secondary'), color: 'var(--danger)' }}
+                      onClick={handleEndCall}
+                    >
+                      <Icons.PhoneOff /> End Call
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={styles.card} className="animate-in delay-2">
+              <div style={styles.cardHeader}>
+                <div style={styles.cardIcon('var(--accent-orange)')}>
+                  <Icons.FileText />
+                </div>
+                <div>
+                  <h3 style={styles.cardTitle}>Live Transcript</h3>
+                  <p style={styles.cardDescription}>Real-time conversation log</p>
+                </div>
+              </div>
+
+              {transcript.length > 0 ? (
+                <div style={styles.transcript}>
+                  {transcript.map((msg, i) => (
+                    <div key={i} style={styles.transcriptMessage(msg.role)}>
+                      <div style={{ 
+                        fontSize: '11px', 
+                        fontWeight: '600', 
+                        color: msg.role === 'assistant' ? 'var(--accent-blue)' : 'var(--accent-primary)',
+                        marginBottom: '6px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {msg.role === 'assistant' ? 'AI Interviewer' : 'Candidate'}
+                      </div>
+                      <p style={{ fontSize: '14px', lineHeight: '1.6' }}>{msg.content}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                  <div style={{ marginBottom: '16px', opacity: 0.5 }}>
+                    <Icons.FileText />
+                  </div>
+                  <p>Transcript will appear here during the call</p>
+                </div>
+              )}
+
+              {transcript.length > 0 && (
+                <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
+                  <button style={{ ...styles.button('secondary'), flex: 1 }}>
+                    <Icons.Download /> Export Transcript
+                  </button>
+                  <button style={{ ...styles.button('secondary'), flex: 1 }}>
+                    <Icons.BarChart /> Generate Report
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Integration Guide */}
+          <div style={{ ...styles.card, marginTop: '24px' }} className="animate-in delay-3">
+            <div style={styles.cardHeader}>
+              <div style={styles.cardIcon('var(--accent-primary)')}>
+                <Icons.Zap />
+              </div>
+              <div>
+                <h3 style={styles.cardTitle}>OpenAI Realtime API Integration</h3>
+                <p style={styles.cardDescription}>Connect your backend for production voice calls</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>WebSocket Connection</div>
+                <div style={styles.codeBlock}>
+{`const ws = new WebSocket(
+  'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17',
+  ['realtime', \`openai-insecure-api-key.\${API_KEY}\`]
+);`}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Session Configuration</div>
+                <div style={styles.codeBlock}>
+{`ws.send(JSON.stringify({
+  type: 'session.update',
+  session: {
+    voice: 'alloy',
+    instructions: 'You are an HR interviewer...',
+    input_audio_transcription: { model: 'whisper-1' }
+  }
+}));`}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Candidates Page
+    function CandidatesPage() {
+      const [selectedCandidate, setSelectedCandidate] = useState(null);
+      const [filter, setFilter] = useState('all');
+
+      const candidates = [
+        { id: 1, name: 'Priya Sharma', role: 'Senior Python Developer', score: 92, status: 'shortlisted', interviewed: true },
+        { id: 2, name: 'Rahul Verma', role: 'Data Scientist', score: 85, status: 'shortlisted', interviewed: true },
+        { id: 3, name: 'Ananya Patel', role: 'ML Engineer', score: 78, status: 'pending', interviewed: false },
+        { id: 4, name: 'Vikram Singh', role: 'Backend Developer', score: 71, status: 'pending', interviewed: true },
+        { id: 5, name: 'Neha Gupta', role: 'Full Stack Developer', score: 65, status: 'rejected', interviewed: true },
+      ];
+
+      const filteredCandidates = candidates.filter(c => filter === 'all' || c.status === filter);
+
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-orange)' }}>Candidate</span> Pipeline
+            </h1>
+            <p style={styles.pageSubtitle}>
+              Review and manage your candidate pool with AI-generated insights and recommendations.
+            </p>
+          </div>
+
+          <Tabs
+            tabs={[
+              { id: 'all', label: 'All Candidates' },
+              { id: 'shortlisted', label: 'Shortlisted' },
+              { id: 'pending', label: 'Pending' },
+              { id: 'rejected', label: 'Rejected' },
+            ]}
+            activeTab={filter}
+            onChange={setFilter}
+          />
+
+          <div style={styles.grid}>
+            <div style={styles.card} className="animate-in delay-1">
+              <div style={styles.cardHeader}>
+                <div style={styles.cardIcon('var(--accent-orange)')}>
+                  <Icons.Users />
+                </div>
+                <div>
+                  <h3 style={styles.cardTitle}>Candidates ({filteredCandidates.length})</h3>
+                  <p style={styles.cardDescription}>Click to view detailed profile</p>
+                </div>
+              </div>
+
+              {filteredCandidates.map((candidate) => (
+                <div
+                  key={candidate.id}
+                  style={{
+                    ...styles.candidateCard,
+                    borderColor: selectedCandidate?.id === candidate.id ? 'var(--accent-primary)' : 'transparent',
+                  }}
+                  onClick={() => setSelectedCandidate(candidate)}
+                  onMouseEnter={(e) => {
+                    if (selectedCandidate?.id !== candidate.id) {
+                      e.currentTarget.style.borderColor = 'var(--border-hover)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedCandidate?.id !== candidate.id) {
+                      e.currentTarget.style.borderColor = 'transparent';
+                    }
+                  }}
+                >
+                  <div style={styles.avatar}>
+                    {candidate.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '600', marginBottom: '2px' }}>{candidate.name}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{candidate.role}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ 
+                      fontWeight: '700', 
+                      fontSize: '18px',
+                      color: candidate.score >= 70 ? 'var(--success)' : candidate.score >= 50 ? 'var(--warning)' : 'var(--danger)',
+                      marginBottom: '4px'
+                    }}>
+                      {candidate.score}%
+                    </div>
+                    <span style={styles.statusBadge(candidate.status === 'shortlisted' ? 'completed' : candidate.status === 'rejected' ? 'failed' : 'pending')}>
+                      {candidate.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={styles.card} className="animate-in delay-2">
+              {selectedCandidate ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
+                    <div style={{ ...styles.avatar, width: '72px', height: '72px', fontSize: '24px' }}>
+                      {selectedCandidate.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '4px' }}>{selectedCandidate.name}</h3>
+                      <p style={{ color: 'var(--text-secondary)' }}>{selectedCandidate.role}</p>
+                      <div style={{ marginTop: '8px' }}>
+                        <span style={styles.tag('var(--accent-primary)')}>Python</span>
+                        <span style={styles.tag('var(--accent-blue)')}>FastAPI</span>
+                        <span style={styles.tag('var(--accent-purple)')}>ML</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                    <div style={styles.configSection}>
+                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Match Score</div>
+                      <div style={{ fontSize: '32px', fontWeight: '700', color: selectedCandidate.score >= 70 ? 'var(--success)' : 'var(--warning)' }}>
+                        {selectedCandidate.score}%
+                      </div>
+                      <div style={{ ...styles.progressBar, marginTop: '12px' }}>
+                        <div style={styles.progressFill(selectedCandidate.score, selectedCandidate.score >= 70 ? 'var(--success)' : 'var(--warning)')} />
+                      </div>
+                    </div>
+                    <div style={styles.configSection}>
+                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Interview Status</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600' }}>
+                        {selectedCandidate.interviewed ? 'Completed' : 'Pending'}
+                      </div>
+                      <span style={{ ...styles.statusBadge(selectedCandidate.interviewed ? 'completed' : 'pending'), marginTop: '8px' }}>
+                        {selectedCandidate.interviewed ? 'Voice interview done' : 'Schedule interview'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={styles.resultCard}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      AI Assessment Summary
+                    </div>
+                    <p style={{ fontSize: '14px', lineHeight: '1.7' }}>
+                      Strong technical background with excellent Python and FastAPI skills. Demonstrated experience in building scalable APIs and working with machine learning models. Communication skills were evaluated as above average during the voice interview. Recommended for technical round.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                    <button style={{ ...styles.button('primary'), flex: 1 }}>
+                      <Icons.Check /> Shortlist
+                    </button>
+                    <button style={{ ...styles.button('secondary'), flex: 1 }}>
+                      <Icons.Phone /> Schedule Call
+                    </button>
+                    <button style={{ ...styles.button('secondary'), flex: 1 }}>
+                      <Icons.Download /> Download Report
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
+                  <div style={{ marginBottom: '16px', opacity: 0.5 }}>
+                    <Icons.Users />
+                  </div>
+                  <p>Select a candidate to view details</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Settings Page
+    function SettingsPage() {
+      const [settings, setSettings] = useState({
+        apiBaseUrl: 'http://localhost:8000',
+        openaiKey: '',
+        mistralKey: '',
+        azureEndpoint: '',
+        voiceModel: 'alloy',
+        autoTranscribe: true,
+      });
+
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--text-secondary)' }}>Settings</span>
+            </h1>
+            <p style={styles.pageSubtitle}>
+              Configure your API connections and application preferences.
+            </p>
+          </div>
+
+          <div style={{ maxWidth: '800px' }}>
+            <div style={styles.card} className="animate-in delay-1">
+              <div style={styles.cardHeader}>
+                <div style={styles.cardIcon('var(--accent-primary)')}>
+                  <Icons.Globe />
+                </div>
+                <div>
+                  <h3 style={styles.cardTitle}>API Configuration</h3>
+                  <p style={styles.cardDescription}>Connect your backend services</p>
+                </div>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Backend API URL</label>
+                <input
+                  style={styles.input}
+                  placeholder="http://localhost:8000"
+                  value={settings.apiBaseUrl}
+                  onChange={(e) => setSettings({...settings, apiBaseUrl: e.target.value})}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                />
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  The base URL for your FastAPI backend
+                </p>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>OpenAI API Key</label>
+                <input
+                  type="password"
+                  style={styles.input}
+                  placeholder="sk-..."
+                  value={settings.openaiKey}
+                  onChange={(e) => setSettings({...settings, openaiKey: e.target.value})}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                />
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  Required for OpenAI Realtime API voice features
+                </p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Mistral API Key</label>
+                  <input
+                    type="password"
+                    style={styles.input}
+                    placeholder="Enter key..."
+                    value={settings.mistralKey}
+                    onChange={(e) => setSettings({...settings, mistralKey: e.target.value})}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Azure Endpoint</label>
+                  <input
+                    style={styles.input}
+                    placeholder="https://..."
+                    value={settings.azureEndpoint}
+                    onChange={(e) => setSettings({...settings, azureEndpoint: e.target.value})}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ ...styles.card, marginTop: '24px' }} className="animate-in delay-2">
+              <div style={styles.cardHeader}>
+                <div style={styles.cardIcon('var(--accent-purple)')}>
+                  <Icons.Mic />
+                </div>
+                <div>
+                  <h3 style={styles.cardTitle}>Voice Settings</h3>
+                  <p style={styles.cardDescription}>Configure the AI voice agent</p>
+                </div>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Voice Model</label>
+                <select
+                  style={styles.select}
+                  value={settings.voiceModel}
+                  onChange={(e) => setSettings({...settings, voiceModel: e.target.value})}
+                >
+                  <option value="alloy">Alloy (Balanced)</option>
+                  <option value="echo">Echo (Deep)</option>
+                  <option value="fable">Fable (Expressive)</option>
+                  <option value="onyx">Onyx (Authoritative)</option>
+                  <option value="nova">Nova (Friendly)</option>
+                  <option value="shimmer">Shimmer (Warm)</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '10px' }}>
+                <div>
+                  <div style={{ fontWeight: '500', marginBottom: '2px' }}>Auto-transcribe interviews</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Automatically generate transcripts during calls</div>
+                </div>
+                <button
+                  style={{
+                    width: '48px',
+                    height: '28px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: settings.autoTranscribe ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
+                    position: 'relative',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onClick={() => setSettings({...settings, autoTranscribe: !settings.autoTranscribe})}
+                >
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    background: 'white',
+                    position: 'absolute',
+                    top: '4px',
+                    left: settings.autoTranscribe ? '24px' : '4px',
+                    transition: 'left 0.2s ease',
+                  }} />
+                </button>
+              </div>
+            </div>
+
+            <button
+              style={{ ...styles.button('primary'), marginTop: '24px' }}
+            >
+              <Icons.Check /> Save Settings
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // ==================== MAIN APP ====================
+    function App() {
+      const [currentPage, setCurrentPage] = useState('dashboard');
+
+      const pages = {
+        dashboard: DashboardPage,
+        resume: ResumeScorePage,
+        jd: JDGeneratorPage,
+        voice: VoiceAgentPage,
+        candidates: CandidatesPage,
+        settings: SettingsPage,
+      };
+
+      const PageComponent = pages[currentPage];
+
+      return (
+        <div style={styles.container}>
+          <header style={styles.header}>
+            <div style={styles.logo}>
+              <div style={styles.logoIcon}>
+                <Icons.Zap />
+              </div>
+              <span>TalentFlow<span style={{ color: 'var(--accent-primary)' }}>AI</span></span>
+            </div>
+            <nav style={styles.nav}>
+              {[
+                { id: 'dashboard', label: 'Dashboard' },
+                { id: 'resume', label: 'Resume Scoring' },
+                { id: 'jd', label: 'JD Generator' },
+                { id: 'voice', label: 'Voice Agent' },
+                { id: 'candidates', label: 'Candidates' },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  style={styles.navButton(currentPage === item.id)}
+                  onClick={() => setCurrentPage(item.id)}
+                  onMouseEnter={(e) => {
+                    if (currentPage !== item.id) {
+                      e.target.style.color = 'var(--text-primary)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentPage !== item.id) {
+                      e.target.style.color = 'var(--text-secondary)';
+                    }
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </nav>
+            <button
+              style={{ ...styles.navButton(currentPage === 'settings'), padding: '10px' }}
+              onClick={() => setCurrentPage('settings')}
+            >
+              <Icons.Settings />
+            </button>
+          </header>
+
+          <main style={styles.main}>
+            <PageComponent />
+          </main>
+
+          <footer style={{
+            padding: '24px 32px',
+            textAlign: 'center',
+            color: 'var(--text-muted)',
+            fontSize: '13px',
+            borderTop: '1px solid var(--border-color)',
+          }}>
+            <p>TalentFlow AI — Intelligent Recruitment Platform</p>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
