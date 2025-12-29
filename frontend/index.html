@@ -765,19 +765,9 @@
 
     // Dashboard Page
     function DashboardPage() {
-      const stats = [
-        { label: 'Resumes Scored', value: '1,247', change: '+12%', icon: <Icons.FileText /> },
-        { label: 'JDs Generated', value: '89', change: '+8%', icon: <Icons.Briefcase /> },
-        { label: 'Voice Interviews', value: '234', change: '+24%', icon: <Icons.Phone /> },
-        { label: 'Candidates Shortlisted', value: '456', change: '+15%', icon: <Icons.Users /> },
-      ];
+      const stats = [];
 
-      const recentActivity = [
-        { type: 'score', title: 'Resume scored', candidate: 'John Smith', score: 85, time: '2 min ago' },
-        { type: 'jd', title: 'JD generated', role: 'Senior Python Developer', time: '15 min ago' },
-        { type: 'call', title: 'Interview completed', candidate: 'Sarah Johnson', score: 78, time: '1 hour ago' },
-        { type: 'score', title: 'Resume scored', candidate: 'Mike Chen', score: 92, time: '2 hours ago' },
-      ];
+      const recentActivity = [];
 
       return (
         <div>
@@ -1388,12 +1378,6 @@
         }
         setIsConnected(true);
         setShowConfig(false);
-        // Simulate conversation start
-        setTimeout(() => {
-          setTranscript([
-            { role: 'assistant', content: 'Hello! This is the AI interviewer from TalentFlow. Thank you for taking the time to speak with me today. How are you doing?' }
-          ]);
-        }, 1000);
       };
 
       const handleEndCall = () => {
@@ -1404,15 +1388,6 @@
 
       const toggleMic = () => {
         setIsListening(!isListening);
-        if (!isListening) {
-          // Simulate AI response
-          setTimeout(() => {
-            setTranscript(prev => [...prev, 
-              { role: 'user', content: "I'm doing well, thank you for asking. I'm excited about this opportunity." },
-              { role: 'assistant', content: "That's great to hear! Let me start by asking you about your experience. Can you tell me about your most recent project and the technologies you used?" }
-            ]);
-          }, 2000);
-        }
       };
 
       return (
@@ -1651,13 +1626,7 @@
       const [selectedCandidate, setSelectedCandidate] = useState(null);
       const [filter, setFilter] = useState('all');
 
-      const candidates = [
-        { id: 1, name: 'Priya Sharma', role: 'Senior Python Developer', score: 92, status: 'shortlisted', interviewed: true },
-        { id: 2, name: 'Rahul Verma', role: 'Data Scientist', score: 85, status: 'shortlisted', interviewed: true },
-        { id: 3, name: 'Ananya Patel', role: 'ML Engineer', score: 78, status: 'pending', interviewed: false },
-        { id: 4, name: 'Vikram Singh', role: 'Backend Developer', score: 71, status: 'pending', interviewed: true },
-        { id: 5, name: 'Neha Gupta', role: 'Full Stack Developer', score: 65, status: 'rejected', interviewed: true },
-      ];
+      const candidates = [];
 
       const filteredCandidates = candidates.filter(c => filter === 'all' || c.status === filter);
 
