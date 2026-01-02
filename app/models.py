@@ -109,3 +109,83 @@ class ChatResponse(BaseModel):
     success: bool
     message: str
     response: Optional[str] = None
+
+# ==================== JOB POSTING MODELS ====================
+
+class JobPostingStatus(str, Enum):
+    ACTIVE = "active"
+    CLOSED = "closed"
+    DRAFT = "draft"
+
+class JobPostingCreate(BaseModel):
+    """Request model for creating a job posting."""
+    title: str = Field(..., example="Senior Python Developer")
+    company_name: str = Field(..., example="Innovatech Solutions")
+    description: str = Field(..., example="Full job description text...")
+    experience_level: Optional[str] = Field(None, example="Senior Level (5-8 years)")
+    location: Optional[str] = Field(None, example="Remote")
+    responsibilities: Optional[str] = Field(None, example="Lead development projects...")
+    skills: Optional[str] = Field(None, example="Python, FastAPI, Docker")
+
+class JobPosting(BaseModel):
+    """Model for a job posting."""
+    id: str
+    title: str
+    company_name: str
+    description: str
+    experience_level: Optional[str] = None
+    location: Optional[str] = None
+    responsibilities: Optional[str] = None
+    skills: Optional[str] = None
+    status: str = "active"
+    created_by: Optional[str] = None
+    created_at: str
+
+class JobPostingResponse(BaseModel):
+    """Response model for job posting operations."""
+    success: bool
+    message: str
+    job: Optional[JobPosting] = None
+
+class JobPostingsListResponse(BaseModel):
+    """Response model for listing job postings."""
+    jobs: list[JobPosting]
+
+# ==================== JOB APPLICATION MODELS ====================
+
+class JobApplicationStatus(str, Enum):
+    PENDING = "pending"
+    REVIEWED = "reviewed"
+    SHORTLISTED = "shortlisted"
+    REJECTED = "rejected"
+    HIRED = "hired"
+
+class JobApplicationCreate(BaseModel):
+    """Request model for creating a job application."""
+    job_id: str = Field(..., example="job_123")
+    cover_letter: Optional[str] = Field(None, example="I am excited to apply...")
+
+class JobApplication(BaseModel):
+    """Model for a job application."""
+    id: str
+    job_id: str
+    candidate_id: str
+    candidate_name: str
+    candidate_email: str
+    resume_path: Optional[str] = None
+    resume_url: Optional[str] = None
+    cover_letter: Optional[str] = None
+    status: str = "pending"
+    created_at: str
+    job_title: Optional[str] = None
+    company_name: Optional[str] = None
+
+class JobApplicationResponse(BaseModel):
+    """Response model for job application operations."""
+    success: bool
+    message: str
+    application: Optional[JobApplication] = None
+
+class JobApplicationsListResponse(BaseModel):
+    """Response model for listing job applications."""
+    applications: list[JobApplication]

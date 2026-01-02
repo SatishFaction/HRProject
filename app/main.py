@@ -7,7 +7,9 @@ from . import services, utils, database
 from .models import (
     ScoreResponse, JobRoleInput, JobDescriptionResponse,
     LoginRequest, LoginResponse, RegisterRequest, RegisterResponse,
-    User, UserRole, BatchScoreResponse
+    User, UserRole, BatchScoreResponse,
+    JobPostingCreate, JobPosting, JobPostingResponse, JobPostingsListResponse,
+    JobApplication, JobApplicationResponse, JobApplicationsListResponse
 )
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
@@ -288,6 +290,267 @@ async def get_dashboard_stats():
     **HR Only**
     """
     stats = database.get_application_stats()
+    return stats
+
+# ==================== JOB POSTING ENDPOINTS ====================
+
+@app.post("/jobs/", response_model=JobPostingResponse, tags=["Job Postings"])
+async def create_job_posting(job: JobPostingCreate, token: str = Form(None)):
+    """
+    Create a new job posting.
+    **HR Only**
+    """
+    # Get user from token if provided
+    created_by = None
+    if token:
+        user_data = database.get_user_by_token(token)
+        if user_data:
+            created_by = user_data['id']
+
+    job_data = database.create_job_posting(
+        title=job.title,
+        company_name=job.company_name,
+        description=job.description,
+        experience_level=job.experience_level,
+        location=job.location,
+        responsibilities=job.responsibilities,
+        skills=job.skills,
+        created_by=created_by
+    )
+
+    return JobPostingResponse(
+        success=True,
+        message="Job posting created successfully",
+        job=JobPosting(**job_data)
+    )
+
+@app.post("/jobs/from-jd/", response_model=JobPostingResponse, tags=["Job Postings"])
+async def create_job_posting_from_jd(
+    title: str = Form(...),
+    company_name: str = Form(...),
+    description: str = Form(...),
+    experience_level: str = Form(None),
+    location: str = Form(None),
+    responsibilities: str = Form(None),
+    skills: str = Form(None),
+    token: str = Form(None)
+):
+    """
+    Create a new job posting from JD generator.
+    **HR Only**
+    """
+    created_by = None
+    if token:
+        user_data = database.get_user_by_token(token)
+        if user_data:
+            created_by = user_data['id']
+
+    job_data = database.create_job_posting(
+        title=title,
+        company_name=company_name,
+        description=description,
+        experience_level=experience_level,
+        location=location,
+        responsibilities=responsibilities,
+        skills=skills,
+        created_by=created_by
+    )
+
+    return JobPostingResponse(
+        success=True,
+        message="Job posting created successfully",
+        job=JobPosting(**job_data)
+    )
+
+@app.get("/jobs/", response_model=JobPostingsListResponse, tags=["Job Postings"])
+async def get_all_jobs(status: str = None):
+    """
+    Get all job postings, optionally filtered by status.
+    Public endpoint for candidates to view active jobs.
+    """
+    jobs_data = database.get_all_job_postings(status=status)
+    jobs = [JobPosting(**job) for job in jobs_data]
+    return JobPostingsListResponse(jobs=jobs)
+
+@app.get("/jobs/{job_id}", tags=["Job Postings"])
+async def get_job(job_id: str):
+    """
+    Get a specific job posting by ID.
+    """
+    job_data = database.get_job_posting_by_id(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {"success": True, "job": JobPosting(**job_data)}
+
+@app.put("/jobs/{job_id}/status/", tags=["Job Postings"])
+async def update_job_status(job_id: str, status: str = Form(...)):
+    """
+    Update the status of a job posting.
+    **HR Only**
+    """
+    if status not in ['active', 'closed', 'draft']:
+        raise HTTPException(status_code=400, detail="Invalid status")
+
+    success = database.update_job_posting_status(job_id, status)
+    if not success:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return {"success": True, "message": f"Job status updated to {status}"}
+
+@app.delete("/jobs/{job_id}", tags=["Job Postings"])
+async def delete_job(job_id: str):
+    """
+    Delete a job posting.
+    **HR Only**
+    """
+    success = database.delete_job_posting(job_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return {"success": True, "message": "Job deleted successfully"}
+
+# ==================== JOB APPLICATION ENDPOINTS ====================
+
+@app.post("/jobs/{job_id}/apply/", response_model=JobApplicationResponse, tags=["Job Applications"])
+async def apply_to_job(
+    job_id: str,
+    token: str = Form(...),
+    resume_file: UploadFile = File(None),
+    cover_letter: str = Form(None)
+):
+    """
+    Apply to a job posting.
+    **Candidate Only**
+    """
+    # Verify token and get user
+    user_data = database.get_user_by_token(token)
+    if not user_data:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    # Check if job exists
+    job_data = database.get_job_posting_by_id(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job_data['status'] != 'active':
+        raise HTTPException(status_code=400, detail="This job is no longer accepting applications")
+
+    # Check for existing application
+    if database.check_existing_application(job_id, user_data['id']):
+        raise HTTPException(status_code=400, detail="You have already applied to this job")
+
+    # Save resume file if provided
+    resume_path = None
+    if resume_file and resume_file.filename:
+        file_ext = os.path.splitext(resume_file.filename)[1]
+        if file_ext.lower() not in ['.pdf', '.docx', '.doc']:
+            raise HTTPException(status_code=400, detail="Only PDF and DOCX files are allowed")
+
+        unique_filename = f"{uuid.uuid4()}{file_ext}"
+        file_path = f"uploads/{unique_filename}"
+
+        content = await resume_file.read()
+        with open(file_path, "wb") as f:
+            f.write(content)
+        resume_path = unique_filename
+
+    # Create application
+    app_data = database.create_job_application(
+        job_id=job_id,
+        candidate_id=user_data['id'],
+        candidate_name=user_data['full_name'],
+        candidate_email=user_data['email'],
+        resume_path=resume_path,
+        cover_letter=cover_letter
+    )
+
+    # Add resume URL if available
+    if resume_path:
+        app_data['resume_url'] = f"http://localhost:8000/uploads/{resume_path}"
+
+    return JobApplicationResponse(
+        success=True,
+        message="Application submitted successfully",
+        application=JobApplication(**app_data)
+    )
+
+@app.get("/job-applications/", response_model=JobApplicationsListResponse, tags=["Job Applications"])
+async def get_all_job_applications(job_id: str = None):
+    """
+    Get all job applications.
+    **HR Only**
+    """
+    apps_data = database.get_all_job_applications(job_id=job_id)
+    base_url = "http://localhost:8000/uploads/"
+
+    applications = []
+    for app in apps_data:
+        app_dict = dict(app)
+        if app_dict.get('resume_path'):
+            app_dict['resume_url'] = f"{base_url}{app_dict['resume_path']}"
+        applications.append(JobApplication(**app_dict))
+
+    return JobApplicationsListResponse(applications=applications)
+
+@app.get("/job-applications/my/", response_model=JobApplicationsListResponse, tags=["Job Applications"])
+async def get_my_applications(token: str):
+    """
+    Get current user's job applications.
+    **Candidate Only**
+    """
+    user_data = database.get_user_by_token(token)
+    if not user_data:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    apps_data = database.get_job_applications_by_candidate(user_data['id'])
+    base_url = "http://localhost:8000/uploads/"
+
+    applications = []
+    for app in apps_data:
+        app_dict = dict(app)
+        if app_dict.get('resume_path'):
+            app_dict['resume_url'] = f"{base_url}{app_dict['resume_path']}"
+        applications.append(JobApplication(**app_dict))
+
+    return JobApplicationsListResponse(applications=applications)
+
+@app.get("/job-applications/{app_id}", tags=["Job Applications"])
+async def get_job_application(app_id: str):
+    """
+    Get a specific job application by ID.
+    """
+    app_data = database.get_job_application_by_id(app_id)
+    if not app_data:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    base_url = "http://localhost:8000/uploads/"
+    if app_data.get('resume_path'):
+        app_data['resume_url'] = f"{base_url}{app_data['resume_path']}"
+
+    return {"success": True, "application": JobApplication(**app_data)}
+
+@app.put("/job-applications/{app_id}/status/", tags=["Job Applications"])
+async def update_job_application_status(app_id: str, status: str = Form(...)):
+    """
+    Update the status of a job application.
+    **HR Only**
+    """
+    if status not in ['pending', 'reviewed', 'shortlisted', 'rejected', 'hired']:
+        raise HTTPException(status_code=400, detail="Invalid status")
+
+    success = database.update_job_application_status(app_id, status)
+    if not success:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    return {"success": True, "message": f"Application status updated to {status}"}
+
+@app.get("/job-applications/stats/", tags=["Job Applications"])
+async def get_job_application_stats():
+    """
+    Get job application statistics.
+    **HR Only**
+    """
+    stats = database.get_job_application_stats()
     return stats
 
 # ==================== REALTIME VOICE INTERVIEW ENDPOINTS ====================

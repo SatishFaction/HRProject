@@ -1258,9 +1258,11 @@
         extra_details: '',
       });
       const [loading, setLoading] = useState(false);
+      const [posting, setPosting] = useState(false);
       const [result, setResult] = useState(null);
       const [error, setError] = useState(null);
       const [copied, setCopied] = useState(false);
+      const [posted, setPosted] = useState(false);
 
       const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -1271,6 +1273,7 @@
 
         setLoading(true);
         setError(null);
+        setPosted(false);
 
         try {
           const response = await fetch(`${API_CONFIG.BASE_URL}/create_job_description/`, {
@@ -1294,6 +1297,46 @@
         navigator.clipboard.writeText(result);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+      };
+
+      const handlePostJob = async () => {
+        if (!result || !formData.job_title || !formData.company_name) return;
+
+        setPosting(true);
+        setError(null);
+
+        try {
+          const postData = new FormData();
+          postData.append('title', formData.job_title);
+          postData.append('company_name', formData.company_name);
+          postData.append('description', result);
+          postData.append('experience_level', formData.experience_level || '');
+          postData.append('location', formData.location || '');
+          postData.append('responsibilities', formData.key_responsibilities || '');
+          postData.append('skills', formData.required_skills || '');
+
+          const token = localStorage.getItem('token');
+          if (token) {
+            postData.append('token', token);
+          }
+
+          const response = await fetch(`${API_CONFIG.BASE_URL}/jobs/from-jd/`, {
+            method: 'POST',
+            body: postData,
+          });
+
+          if (!response.ok) throw new Error('Failed to post job');
+
+          const data = await response.json();
+          if (data.success) {
+            setPosted(true);
+            setTimeout(() => setPosted(false), 3000);
+          }
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setPosting(false);
+        }
       };
 
       return (
@@ -1449,28 +1492,60 @@
                   </div>
                 </div>
                 {result && (
-                  <button
-                    style={{ ...styles.button('secondary'), padding: '10px 16px' }}
-                    onClick={handleCopy}
-                  >
-                    {copied ? <Icons.Check /> : <Icons.Copy />}
-                    {copied ? 'Copied!' : 'Copy'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      style={{ ...styles.button('secondary'), padding: '10px 16px' }}
+                      onClick={handleCopy}
+                    >
+                      {copied ? <Icons.Check /> : <Icons.Copy />}
+                      {copied ? 'Copied!' : 'Copy'}
+                    </button>
+                    <button
+                      style={{
+                        ...styles.button('primary'),
+                        padding: '10px 16px',
+                        background: posted ? 'var(--success)' : 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
+                        opacity: posting ? 0.7 : 1,
+                      }}
+                      onClick={handlePostJob}
+                      disabled={posting || posted}
+                    >
+                      {posting ? <Spinner size={16} /> : posted ? <Icons.Check /> : <Icons.Briefcase />}
+                      {posting ? 'Posting...' : posted ? 'Posted!' : 'Post Job'}
+                    </button>
+                  </div>
                 )}
               </div>
 
               {result ? (
-                <div style={{
-                  background: 'var(--bg-secondary)',
-                  borderRadius: '12px',
-                  padding: '24px',
-                  maxHeight: '600px',
-                  overflow: 'auto',
-                  whiteSpace: 'pre-wrap',
-                  fontSize: '14px',
-                  lineHeight: '1.8',
-                }}>
-                  {result}
+                <div>
+                  <div style={{
+                    background: 'var(--bg-secondary)',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    maxHeight: '500px',
+                    overflow: 'auto',
+                    whiteSpace: 'pre-wrap',
+                    fontSize: '14px',
+                    lineHeight: '1.8',
+                  }}>
+                    {result}
+                  </div>
+                  {posted && (
+                    <div style={{
+                      marginTop: '16px',
+                      padding: '12px 16px',
+                      background: 'rgba(34, 197, 94, 0.1)',
+                      borderRadius: '8px',
+                      color: 'var(--success)',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Icons.Check /> Job posted successfully! Candidates can now view and apply.
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
@@ -2054,6 +2129,295 @@
       );
     }
 
+    // Job Applications Page (HR Admin)
+    function JobApplicationsPage() {
+      const [applications, setApplications] = useState([]);
+      const [jobs, setJobs] = useState([]);
+      const [selectedApp, setSelectedApp] = useState(null);
+      const [filter, setFilter] = useState('pending');
+      const [loading, setLoading] = useState(true);
+      const [actionLoading, setActionLoading] = useState(false);
+
+      useEffect(() => {
+        fetchData();
+      }, []);
+
+      const fetchData = async () => {
+        try {
+          const [appsRes, jobsRes] = await Promise.all([
+            fetch(`${API_CONFIG.BASE_URL}/job-applications/`),
+            fetch(`${API_CONFIG.BASE_URL}/jobs/`)
+          ]);
+          const appsData = await appsRes.json();
+          const jobsData = await jobsRes.json();
+          setApplications(appsData.applications || []);
+          setJobs(jobsData.jobs || []);
+        } catch (e) {
+          console.error("Applications error", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handleStatusUpdate = async (appId, newStatus) => {
+        setActionLoading(true);
+        try {
+          const formData = new FormData();
+          formData.append('status', newStatus);
+
+          const response = await fetch(`${API_CONFIG.BASE_URL}/job-applications/${appId}/status/`, {
+            method: 'PUT',
+            body: formData
+          });
+
+          if (response.ok) {
+            setApplications(prev => prev.map(a =>
+              a.id === appId ? { ...a, status: newStatus } : a
+            ));
+            if (selectedApp?.id === appId) {
+              setSelectedApp(prev => ({ ...prev, status: newStatus }));
+            }
+          }
+        } catch (err) {
+          console.error("Failed to update status", err);
+        } finally {
+          setActionLoading(false);
+        }
+      };
+
+      const filteredApps = applications.filter(a => filter === 'all' || a.status === filter);
+
+      const statusColors = {
+        pending: 'var(--warning)',
+        reviewed: 'var(--accent-blue)',
+        shortlisted: 'var(--success)',
+        rejected: 'var(--danger)',
+        hired: 'var(--accent-purple)'
+      };
+
+      if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading applications...</div>;
+
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-purple)' }}>Job</span> Applications
+            </h1>
+            <p style={styles.pageSubtitle}>
+              Review applications submitted by candidates for your job postings.
+            </p>
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            {[
+              { label: 'Total', count: applications.length, color: 'var(--text-primary)' },
+              { label: 'Pending', count: applications.filter(a => a.status === 'pending').length, color: 'var(--warning)' },
+              { label: 'Reviewed', count: applications.filter(a => a.status === 'reviewed').length, color: 'var(--accent-blue)' },
+              { label: 'Shortlisted', count: applications.filter(a => a.status === 'shortlisted').length, color: 'var(--success)' },
+              { label: 'Hired', count: applications.filter(a => a.status === 'hired').length, color: 'var(--accent-purple)' },
+            ].map(stat => (
+              <div key={stat.label} style={{
+                background: 'var(--bg-card)',
+                borderRadius: '12px',
+                padding: '16px',
+                border: '1px solid var(--border-color)',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: stat.color }}>{stat.count}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <Tabs
+            tabs={[
+              { id: 'pending', label: 'Pending' },
+              { id: 'reviewed', label: 'Reviewed' },
+              { id: 'shortlisted', label: 'Shortlisted' },
+              { id: 'rejected', label: 'Rejected' },
+              { id: 'hired', label: 'Hired' },
+              { id: 'all', label: 'All' },
+            ]}
+            activeTab={filter}
+            onChange={setFilter}
+          />
+
+          <div style={styles.grid}>
+            <div style={styles.card} className="animate-in delay-1">
+              <div style={styles.cardHeader}>
+                <div style={styles.cardIcon('var(--accent-purple)')}>
+                  <Icons.FileText />
+                </div>
+                <div>
+                  <h3 style={styles.cardTitle}>Applications ({filteredApps.length})</h3>
+                  <p style={styles.cardDescription}>Click to view details</p>
+                </div>
+              </div>
+
+              {filteredApps.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  No applications in this category.
+                </div>
+              ) : (
+                filteredApps.map((app) => (
+                  <div
+                    key={app.id}
+                    style={{
+                      ...styles.candidateCard,
+                      borderColor: selectedApp?.id === app.id ? 'var(--accent-purple)' : 'transparent',
+                    }}
+                    onClick={() => setSelectedApp(app)}
+                  >
+                    <div style={styles.avatar}>
+                      {app.candidate_name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', marginBottom: '2px' }}>{app.candidate_name}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{app.job_title || 'Unknown Job'}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{app.company_name}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        color: statusColors[app.status],
+                        background: `${statusColors[app.status]}15`,
+                        borderRadius: '20px',
+                      }}>
+                        {app.status}
+                      </span>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        {new Date(app.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div style={styles.card} className="animate-in delay-2">
+              {selectedApp ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
+                    <div style={{ ...styles.avatar, width: '72px', height: '72px', fontSize: '24px' }}>
+                      {selectedApp.candidate_name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '4px' }}>{selectedApp.candidate_name}</h3>
+                      <div style={{ color: 'var(--text-secondary)' }}>{selectedApp.candidate_email}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        Applied for: <strong>{selectedApp.job_title}</strong> at {selectedApp.company_name}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Resume Download */}
+                  {selectedApp.resume_url && (
+                    <a
+                      href={selectedApp.resume_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 16px',
+                        background: 'rgba(139, 92, 246, 0.1)',
+                        color: 'var(--accent-purple)',
+                        borderRadius: '8px',
+                        marginBottom: '20px',
+                        textDecoration: 'none',
+                        fontWeight: '500',
+                      }}
+                    >
+                      <Icons.Download /> Download Resume
+                    </a>
+                  )}
+
+                  {/* Cover Letter */}
+                  {selectedApp.cover_letter && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>
+                        Cover Letter
+                      </div>
+                      <div style={{
+                        background: 'var(--bg-secondary)',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        lineHeight: '1.6',
+                        whiteSpace: 'pre-wrap',
+                        maxHeight: '200px',
+                        overflow: 'auto'
+                      }}>
+                        {selectedApp.cover_letter}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Status Actions */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase' }}>
+                      Update Status
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {['pending', 'reviewed', 'shortlisted', 'rejected', 'hired'].map(status => (
+                        <button
+                          key={status}
+                          onClick={() => handleStatusUpdate(selectedApp.id, status)}
+                          disabled={actionLoading || selectedApp.status === status}
+                          style={{
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            background: selectedApp.status === status ? statusColors[status] : 'var(--bg-tertiary)',
+                            color: selectedApp.status === status ? 'white' : statusColors[status],
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            cursor: actionLoading ? 'wait' : 'pointer',
+                            opacity: selectedApp.status === status ? 1 : 0.8,
+                            transition: 'all 0.2s',
+                            textTransform: 'capitalize'
+                          }}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Application Info */}
+                  <div style={styles.resultCard}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Application Details
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '14px' }}>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)' }}>Applied:</span>{' '}
+                        {new Date(selectedApp.created_at).toLocaleString()}
+                      </div>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)' }}>Status:</span>{' '}
+                        <span style={{ color: statusColors[selectedApp.status], fontWeight: '600', textTransform: 'capitalize' }}>
+                          {selectedApp.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-muted)' }}>
+                  Select an application to view details
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
 
 
     // Settings Page
@@ -2888,6 +3252,512 @@
       );
     }
 
+    // ==================== CANDIDATE PAGES ====================
+
+    // Job Listings Page (for Candidates)
+    function JobListingsPage({ user }) {
+      const [jobs, setJobs] = useState([]);
+      const [selectedJob, setSelectedJob] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [applying, setApplying] = useState(false);
+      const [showApplyModal, setShowApplyModal] = useState(false);
+      const [resumeFile, setResumeFile] = useState(null);
+      const [coverLetter, setCoverLetter] = useState('');
+      const [applySuccess, setApplySuccess] = useState(false);
+      const [error, setError] = useState(null);
+      const [myApplications, setMyApplications] = useState([]);
+      const fileInputRef = useRef(null);
+
+      useEffect(() => {
+        fetchJobs();
+        fetchMyApplications();
+      }, []);
+
+      const fetchJobs = async () => {
+        try {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/jobs/?status=active`);
+          const data = await response.json();
+          setJobs(data.jobs || []);
+        } catch (e) {
+          console.error("Jobs error", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const fetchMyApplications = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) return;
+          const response = await fetch(`${API_CONFIG.BASE_URL}/job-applications/my/?token=${token}`);
+          const data = await response.json();
+          setMyApplications(data.applications || []);
+        } catch (e) {
+          console.error("My applications error", e);
+        }
+      };
+
+      const hasApplied = (jobId) => {
+        return myApplications.some(app => app.job_id === jobId);
+      };
+
+      const handleApply = async () => {
+        if (!selectedJob) return;
+
+        setApplying(true);
+        setError(null);
+
+        try {
+          const token = localStorage.getItem('token');
+          const formData = new FormData();
+          formData.append('token', token);
+          if (resumeFile) {
+            formData.append('resume_file', resumeFile);
+          }
+          if (coverLetter) {
+            formData.append('cover_letter', coverLetter);
+          }
+
+          const response = await fetch(`${API_CONFIG.BASE_URL}/jobs/${selectedJob.id}/apply/`, {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.detail || 'Failed to submit application');
+          }
+
+          setApplySuccess(true);
+          setShowApplyModal(false);
+          setResumeFile(null);
+          setCoverLetter('');
+          fetchMyApplications();
+          setTimeout(() => setApplySuccess(false), 3000);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setApplying(false);
+        }
+      };
+
+      if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading job listings...</div>;
+
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-primary)' }}>Job</span> Listings
+            </h1>
+            <p style={styles.pageSubtitle}>
+              Browse available positions and apply to your dream job.
+            </p>
+          </div>
+
+          {applySuccess && (
+            <div style={{
+              padding: '16px',
+              background: 'rgba(34, 197, 94, 0.1)',
+              borderRadius: '12px',
+              marginBottom: '24px',
+              color: 'var(--success)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              <Icons.Check /> Your application has been submitted successfully!
+            </div>
+          )}
+
+          <div style={styles.grid}>
+            <div style={styles.card} className="animate-in delay-1">
+              <div style={styles.cardHeader}>
+                <div style={styles.cardIcon('var(--accent-primary)')}>
+                  <Icons.Briefcase />
+                </div>
+                <div>
+                  <h3 style={styles.cardTitle}>Available Jobs ({jobs.length})</h3>
+                  <p style={styles.cardDescription}>Click to view details</p>
+                </div>
+              </div>
+
+              {jobs.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  No jobs available at the moment.
+                </div>
+              ) : (
+                jobs.map((job) => (
+                  <div
+                    key={job.id}
+                    style={{
+                      ...styles.candidateCard,
+                      borderColor: selectedJob?.id === job.id ? 'var(--accent-primary)' : 'transparent',
+                    }}
+                    onClick={() => setSelectedJob(job)}
+                  >
+                    <div style={{
+                      ...styles.avatar,
+                      background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%)'
+                    }}>
+                      <Icons.Briefcase />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', marginBottom: '4px' }}>{job.title}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{job.company_name}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        {job.location && <span>{job.location} • </span>}
+                        {job.experience_level}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      {hasApplied(job.id) ? (
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '4px 12px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          color: 'var(--success)',
+                          background: 'rgba(34, 197, 94, 0.1)',
+                          borderRadius: '20px',
+                        }}>
+                          Applied
+                        </span>
+                      ) : (
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '4px 12px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          color: 'var(--accent-primary)',
+                          background: 'var(--accent-glow)',
+                          borderRadius: '20px',
+                        }}>
+                          Open
+                        </span>
+                      )}
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        {new Date(job.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div style={styles.card} className="animate-in delay-2">
+              {selectedJob ? (
+                <>
+                  <div style={{ marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '8px' }}>{selectedJob.title}</h3>
+                    <div style={{ color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                      {selectedJob.company_name}
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      {selectedJob.location && (
+                        <span style={styles.tag('var(--accent-primary)')}>
+                          {selectedJob.location}
+                        </span>
+                      )}
+                      {selectedJob.experience_level && (
+                        <span style={styles.tag('var(--accent-blue)')}>
+                          {selectedJob.experience_level}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Skills */}
+                  {selectedJob.skills && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>
+                        Required Skills
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {selectedJob.skills.split(',').map((skill, i) => (
+                          <span key={i} style={{
+                            padding: '4px 10px',
+                            background: 'var(--bg-tertiary)',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            color: 'var(--text-primary)'
+                          }}>
+                            {skill.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Job Description */}
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>
+                      Job Description
+                    </div>
+                    <div style={{
+                      background: 'var(--bg-secondary)',
+                      padding: '16px',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      lineHeight: '1.7',
+                      whiteSpace: 'pre-wrap',
+                      maxHeight: '300px',
+                      overflow: 'auto'
+                    }}>
+                      {selectedJob.description}
+                    </div>
+                  </div>
+
+                  {/* Apply Button */}
+                  {hasApplied(selectedJob.id) ? (
+                    <div style={{
+                      padding: '16px',
+                      background: 'rgba(34, 197, 94, 0.1)',
+                      borderRadius: '8px',
+                      color: 'var(--success)',
+                      textAlign: 'center',
+                      fontWeight: '500'
+                    }}>
+                      <Icons.Check style={{ marginRight: '8px' }} />
+                      You've already applied to this position
+                    </div>
+                  ) : (
+                    <button
+                      style={{ ...styles.button('primary'), width: '100%' }}
+                      onClick={() => setShowApplyModal(true)}
+                    >
+                      <Icons.FileText /> Apply Now
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-muted)' }}>
+                  Select a job to view details
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Apply Modal */}
+          {showApplyModal && selectedJob && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2000
+            }}>
+              <div style={{
+                background: 'var(--bg-card)',
+                borderRadius: '16px',
+                padding: '32px',
+                width: '100%',
+                maxWidth: '500px',
+                maxHeight: '80vh',
+                overflow: 'auto'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: '600' }}>Apply for {selectedJob.title}</h3>
+                  <button
+                    onClick={() => { setShowApplyModal(false); setError(null); }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                  >
+                    <Icons.X />
+                  </button>
+                </div>
+
+                {error && (
+                  <div style={{
+                    padding: '12px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: 'var(--danger)',
+                    borderRadius: '8px',
+                    marginBottom: '20px',
+                    fontSize: '14px'
+                  }}>
+                    {error}
+                  </div>
+                )}
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Resume (PDF or DOCX)</label>
+                  <div
+                    style={{
+                      ...styles.dropzone(false),
+                      padding: '20px'
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      style={{ display: 'none' }}
+                      onChange={(e) => setResumeFile(e.target.files[0])}
+                      accept=".pdf,.docx,.doc"
+                    />
+                    <div style={{ color: 'var(--accent-primary)', marginBottom: '8px' }}>
+                      <Icons.Upload />
+                    </div>
+                    <div style={{ fontSize: '14px' }}>
+                      {resumeFile ? resumeFile.name : 'Click to upload your resume'}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Cover Letter (Optional)</label>
+                  <textarea
+                    style={{ ...styles.textarea, minHeight: '120px' }}
+                    placeholder="Tell us why you're interested in this position..."
+                    value={coverLetter}
+                    onChange={(e) => setCoverLetter(e.target.value)}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    style={{ ...styles.button('secondary'), flex: 1 }}
+                    onClick={() => { setShowApplyModal(false); setError(null); }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    style={{ ...styles.button('primary'), flex: 1, opacity: applying ? 0.7 : 1 }}
+                    onClick={handleApply}
+                    disabled={applying}
+                  >
+                    {applying ? <Spinner size={16} /> : <Icons.Check />}
+                    {applying ? 'Submitting...' : 'Submit Application'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // My Applications Page (for Candidates)
+    function MyApplicationsPage({ user }) {
+      const [applications, setApplications] = useState([]);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        fetchApplications();
+      }, []);
+
+      const fetchApplications = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) return;
+          const response = await fetch(`${API_CONFIG.BASE_URL}/job-applications/my/?token=${token}`);
+          const data = await response.json();
+          setApplications(data.applications || []);
+        } catch (e) {
+          console.error("Applications error", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const statusColors = {
+        pending: 'var(--warning)',
+        reviewed: 'var(--accent-blue)',
+        shortlisted: 'var(--success)',
+        rejected: 'var(--danger)',
+        hired: 'var(--accent-purple)'
+      };
+
+      const statusLabels = {
+        pending: 'Under Review',
+        reviewed: 'Reviewed',
+        shortlisted: 'Shortlisted',
+        rejected: 'Not Selected',
+        hired: 'Hired!'
+      };
+
+      if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading applications...</div>;
+
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-blue)' }}>My</span> Applications
+            </h1>
+            <p style={styles.pageSubtitle}>
+              Track the status of your job applications.
+            </p>
+          </div>
+
+          <div style={{ ...styles.card, maxWidth: '800px' }} className="animate-in delay-1">
+            {applications.length === 0 ? (
+              <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <Icons.FileText />
+                </div>
+                <p>You haven't applied to any jobs yet.</p>
+                <p style={{ fontSize: '14px', marginTop: '8px' }}>Browse available positions in Job Listings.</p>
+              </div>
+            ) : (
+              <div>
+                <div style={{ marginBottom: '20px', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                  {applications.length} application(s)
+                </div>
+                {applications.map((app) => (
+                  <div
+                    key={app.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      padding: '20px',
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '12px',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <div style={{
+                      ...styles.avatar,
+                      background: 'linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%)'
+                    }}>
+                      <Icons.Briefcase />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', marginBottom: '4px' }}>{app.job_title || 'Unknown Position'}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{app.company_name}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        Applied on {new Date(app.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '6px 14px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        color: statusColors[app.status],
+                        background: `${statusColors[app.status]}15`,
+                        borderRadius: '20px',
+                      }}>
+                        {statusLabels[app.status] || app.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     // ==================== CANDIDATE DASHBOARD ====================
     function CandidateDashboard({ user }) {
       return (
@@ -3033,11 +3903,14 @@
         jd: JDGeneratorPage,
         voice: VoiceAgentPage,
         candidates: CandidatesPage,
+        applications: JobApplicationsPage,
         settings: SettingsPage,
       };
 
       const candidatePages = {
         dashboard: () => <CandidateDashboard user={user} />,
+        jobs: () => <JobListingsPage user={user} />,
+        myapplications: () => <MyApplicationsPage user={user} />,
         voice: VoiceAgentPage,
         settings: SettingsPage,
       };
@@ -3051,10 +3924,13 @@
         { id: 'resume', label: 'Resume Scoring' },
         { id: 'jd', label: 'JD Generator' },
         { id: 'candidates', label: 'Candidates' },
+        { id: 'applications', label: 'Applications' },
       ];
 
       const candidateNavItems = [
         { id: 'dashboard', label: 'Dashboard' },
+        { id: 'jobs', label: 'Job Listings' },
+        { id: 'myapplications', label: 'My Applications' },
         { id: 'voice', label: 'Interview' },
       ];
 
