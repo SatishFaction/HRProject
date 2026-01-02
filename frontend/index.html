@@ -2420,6 +2420,394 @@
     }
 
 
+    // Job Postings Management Page (HR Admin)
+    function JobPostingsManagementPage() {
+      const [jobs, setJobs] = useState([]);
+      const [selectedJob, setSelectedJob] = useState(null);
+      const [filter, setFilter] = useState('active');
+      const [loading, setLoading] = useState(true);
+      const [actionLoading, setActionLoading] = useState(false);
+      const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+      useEffect(() => {
+        fetchJobs();
+      }, []);
+
+      const fetchJobs = async () => {
+        try {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/jobs/`);
+          const data = await response.json();
+          setJobs(data.jobs || []);
+        } catch (e) {
+          console.error("Jobs error", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handleStatusUpdate = async (jobId, newStatus) => {
+        setActionLoading(true);
+        try {
+          const formData = new FormData();
+          formData.append('status', newStatus);
+
+          const response = await fetch(`${API_CONFIG.BASE_URL}/jobs/${jobId}/status/`, {
+            method: 'PUT',
+            body: formData
+          });
+
+          if (response.ok) {
+            setJobs(prev => prev.map(j =>
+              j.id === jobId ? { ...j, status: newStatus } : j
+            ));
+            if (selectedJob?.id === jobId) {
+              setSelectedJob(prev => ({ ...prev, status: newStatus }));
+            }
+          }
+        } catch (err) {
+          console.error("Failed to update status", err);
+        } finally {
+          setActionLoading(false);
+        }
+      };
+
+      const handleDelete = async (jobId) => {
+        setActionLoading(true);
+        try {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/jobs/${jobId}`, {
+            method: 'DELETE'
+          });
+
+          if (response.ok) {
+            setJobs(prev => prev.filter(j => j.id !== jobId));
+            if (selectedJob?.id === jobId) {
+              setSelectedJob(null);
+            }
+            setDeleteConfirm(null);
+          }
+        } catch (err) {
+          console.error("Failed to delete job", err);
+        } finally {
+          setActionLoading(false);
+        }
+      };
+
+      const filteredJobs = jobs.filter(j => filter === 'all' || j.status === filter);
+
+      const statusColors = {
+        active: 'var(--success)',
+        closed: 'var(--danger)',
+        draft: 'var(--warning)'
+      };
+
+      if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading job postings...</div>;
+
+      return (
+        <div>
+          <div style={styles.pageHeader} className="animate-in">
+            <h1 style={styles.pageTitle}>
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-primary)' }}>Job</span> Postings
+            </h1>
+            <p style={styles.pageSubtitle}>
+              Manage your job postings and track their status.
+            </p>
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            {[
+              { label: 'Total', count: jobs.length, color: 'var(--text-primary)' },
+              { label: 'Active', count: jobs.filter(j => j.status === 'active').length, color: 'var(--success)' },
+              { label: 'Closed', count: jobs.filter(j => j.status === 'closed').length, color: 'var(--danger)' },
+              { label: 'Draft', count: jobs.filter(j => j.status === 'draft').length, color: 'var(--warning)' },
+            ].map(stat => (
+              <div key={stat.label} style={{
+                background: 'var(--bg-card)',
+                borderRadius: '12px',
+                padding: '16px',
+                border: '1px solid var(--border-color)',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: stat.color }}>{stat.count}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <Tabs
+            tabs={[
+              { id: 'active', label: 'Active' },
+              { id: 'closed', label: 'Closed' },
+              { id: 'draft', label: 'Draft' },
+              { id: 'all', label: 'All' },
+            ]}
+            activeTab={filter}
+            onChange={setFilter}
+          />
+
+          <div style={styles.grid}>
+            <div style={styles.card} className="animate-in delay-1">
+              <div style={styles.cardHeader}>
+                <div style={styles.cardIcon('var(--accent-primary)')}>
+                  <Icons.Briefcase />
+                </div>
+                <div>
+                  <h3 style={styles.cardTitle}>Job Listings ({filteredJobs.length})</h3>
+                  <p style={styles.cardDescription}>Click to view details</p>
+                </div>
+              </div>
+
+              {filteredJobs.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  No job postings in this category.
+                </div>
+              ) : (
+                filteredJobs.map((job) => (
+                  <div
+                    key={job.id}
+                    style={{
+                      ...styles.candidateCard,
+                      borderColor: selectedJob?.id === job.id ? 'var(--accent-primary)' : 'transparent',
+                    }}
+                    onClick={() => setSelectedJob(job)}
+                  >
+                    <div style={styles.avatar}>
+                      <Icons.Briefcase />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', marginBottom: '2px' }}>{job.title}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{job.company_name}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        {job.location || 'Location not specified'}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        color: statusColors[job.status],
+                        background: `${statusColors[job.status]}15`,
+                        borderRadius: '20px',
+                      }}>
+                        {job.status}
+                      </span>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        {new Date(job.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div style={styles.card} className="animate-in delay-2">
+              {selectedJob ? (
+                <>
+                  <div style={{ marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '8px' }}>{selectedJob.title}</h3>
+                    <div style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                      {selectedJob.company_name}
+                    </div>
+                    <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                      {selectedJob.location || 'Location not specified'} • {selectedJob.experience_level || 'Experience level not specified'}
+                    </div>
+                  </div>
+
+                  {/* Job Details */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>
+                      Description
+                    </div>
+                    <div style={{
+                      background: 'var(--bg-secondary)',
+                      padding: '16px',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      lineHeight: '1.6',
+                      whiteSpace: 'pre-wrap',
+                      maxHeight: '200px',
+                      overflow: 'auto'
+                    }}>
+                      {selectedJob.description}
+                    </div>
+                  </div>
+
+                  {selectedJob.responsibilities && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>
+                        Responsibilities
+                      </div>
+                      <div style={{
+                        background: 'var(--bg-secondary)',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        lineHeight: '1.6',
+                        whiteSpace: 'pre-wrap',
+                        maxHeight: '150px',
+                        overflow: 'auto'
+                      }}>
+                        {selectedJob.responsibilities}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedJob.skills && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>
+                        Required Skills
+                      </div>
+                      <div style={{
+                        background: 'var(--bg-secondary)',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        lineHeight: '1.6',
+                        whiteSpace: 'pre-wrap',
+                        maxHeight: '150px',
+                        overflow: 'auto'
+                      }}>
+                        {selectedJob.skills}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Status Actions */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase' }}>
+                      Update Status
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {['active', 'closed', 'draft'].map(status => (
+                        <button
+                          key={status}
+                          onClick={() => handleStatusUpdate(selectedJob.id, status)}
+                          disabled={actionLoading || selectedJob.status === status}
+                          style={{
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            background: selectedJob.status === status ? statusColors[status] : 'var(--bg-tertiary)',
+                            color: selectedJob.status === status ? 'white' : statusColors[status],
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            cursor: actionLoading ? 'wait' : 'pointer',
+                            opacity: selectedJob.status === status ? 1 : 0.8,
+                            transition: 'all 0.2s',
+                            textTransform: 'capitalize'
+                          }}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Delete Action */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase' }}>
+                      Actions
+                    </div>
+                    {deleteConfirm === selectedJob.id ? (
+                      <div style={{
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--danger)'
+                      }}>
+                        <div style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '500' }}>
+                          Are you sure you want to delete this job posting?
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => handleDelete(selectedJob.id)}
+                            disabled={actionLoading}
+                            style={{
+                              padding: '8px 16px',
+                              borderRadius: '8px',
+                              border: 'none',
+                              background: 'var(--danger)',
+                              color: 'white',
+                              fontWeight: '600',
+                              fontSize: '13px',
+                              cursor: actionLoading ? 'wait' : 'pointer',
+                            }}
+                          >
+                            {actionLoading ? 'Deleting...' : 'Yes, Delete'}
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm(null)}
+                            disabled={actionLoading}
+                            style={{
+                              padding: '8px 16px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-tertiary)',
+                              color: 'var(--text-primary)',
+                              fontWeight: '600',
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteConfirm(selectedJob.id)}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          color: 'var(--danger)',
+                          fontWeight: '600',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}
+                      >
+                        <Icons.Trash /> Delete Job Posting
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Job Info */}
+                  <div style={styles.resultCard}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Job Details
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '14px' }}>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)' }}>Posted:</span>{' '}
+                        {new Date(selectedJob.created_at).toLocaleString()}
+                      </div>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)' }}>Status:</span>{' '}
+                        <span style={{ color: statusColors[selectedJob.status], fontWeight: '600', textTransform: 'capitalize' }}>
+                          {selectedJob.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-muted)' }}>
+                  Select a job posting to view details
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+
     // Settings Page
     function SettingsPage() {
       const [settings, setSettings] = useState({
@@ -3903,6 +4291,7 @@
         jd: JDGeneratorPage,
         voice: VoiceAgentPage,
         candidates: CandidatesPage,
+        jobs: JobPostingsManagementPage,
         applications: JobApplicationsPage,
         settings: SettingsPage,
       };
@@ -3924,6 +4313,7 @@
         { id: 'resume', label: 'Resume Scoring' },
         { id: 'jd', label: 'JD Generator' },
         { id: 'candidates', label: 'Candidates' },
+        { id: 'jobs', label: 'Job Postings' },
         { id: 'applications', label: 'Applications' },
       ];
 
