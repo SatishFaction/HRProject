@@ -7,17 +7,33 @@ from .config import settings
 from .utils import encode_pdf_from_bytes, extract_text_from_docx
 from .models import JobRoleInput
 
-# Initialize clients once and reuse them
-mistral_client = Mistral(api_key=settings.MISTRAL_API_KEY)
-llm_client = AzureChatOpenAI(
-    azure_endpoint=settings.AZURE_ENDPOINT,
-    api_key=settings.AZURE_API_KEY,
-    api_version=settings.AZURE_API_VERSION,
-    azure_deployment=settings.AZURE_DEPLOYMENT,
-    model=settings.AZURE_MODEL,
-    temperature=0.7,
-    max_tokens=1000
-)
+# Initialize clients lazily - only when API keys are configured
+mistral_client = None
+llm_client = None
+
+def get_mistral_client():
+    global mistral_client
+    if mistral_client is None:
+        if not settings.MISTRAL_API_KEY:
+            raise HTTPException(status_code=503, detail="Mistral API key not configured")
+        mistral_client = Mistral(api_key=settings.MISTRAL_API_KEY)
+    return mistral_client
+
+def get_llm_client():
+    global llm_client
+    if llm_client is None:
+        if not settings.AZURE_API_KEY or not settings.AZURE_ENDPOINT:
+            raise HTTPException(status_code=503, detail="Azure OpenAI API not configured")
+        llm_client = AzureChatOpenAI(
+            azure_endpoint=settings.AZURE_ENDPOINT,
+            api_key=settings.AZURE_API_KEY,
+            api_version=settings.AZURE_API_VERSION,
+            azure_deployment=settings.AZURE_DEPLOYMENT,
+            model=settings.AZURE_MODEL,
+            temperature=0.7,
+            max_tokens=1000
+        )
+    return llm_client
 
 def extract_resume_text(file_bytes: bytes, file_type: str) -> str:
     """
@@ -29,7 +45,7 @@ def extract_resume_text(file_bytes: bytes, file_type: str) -> str:
         base64_pdf = encode_pdf_from_bytes(file_bytes)
         try:
             print("DEBUG: Sending PDF to Mistral OCR API...")
-            pdf_response = mistral_client.ocr.process(
+            pdf_response = get_mistral_client().ocr.process(
                 model="mistral-ocr-latest",
                 document={
                     "type": "document_url",
@@ -92,7 +108,7 @@ def get_llm_score(resume_text: str, job_description: str) -> dict:
     Example: {{"score": 85.5, "explanation": "The candidate is a strong fit because..."}}
     """
     try:
-        llm_output = llm_client.invoke(prompt)
+        llm_output = get_llm_client().invoke(prompt)
         return json.loads(llm_output.content)
     except json.JSONDecodeError:
         raise HTTPException(status_code=500, detail="LLM returned a non-JSON response.")
@@ -127,7 +143,7 @@ def generate_jd_from_llm(job_details: JobRoleInput) -> str:
     Please generate the full, well-formatted job description now.
     """
     try:
-        llm_output = llm_client.invoke(prompt)
+        llm_output = get_llm_client().invoke(prompt)
         return llm_output.content
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while generating the job description with the LLM: {e}")

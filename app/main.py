@@ -34,6 +34,9 @@ app = FastAPI(
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+# Mount frontend directory
+app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
