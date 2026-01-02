@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
 import os
@@ -14,9 +15,19 @@ from .models import (
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: ensure database tables are created
+    database.init_db()
+    yield
+    # Shutdown: nothing to clean up
+
+
 app = FastAPI(
     title="HR Assistant API",
     description="This API provides tools for HR tasks, including scoring resumes and creating job descriptions.",
+    lifespan=lifespan,
 )
 
 # Mount uploads directory
