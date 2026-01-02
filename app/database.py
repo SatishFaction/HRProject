@@ -113,7 +113,20 @@ def create_application(candidate_name: str, score: int, match_details: str,
         'resume_path': resume_path
     }
     conn.close()
+    conn.close()
     return row
+
+def update_application_status(app_id: str, status: str) -> bool:
+    """Update the status of an application."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("UPDATE applications SET status = ? WHERE id = ?", (status, app_id))
+    updated = cursor.rowcount > 0
+    
+    conn.commit()
+    conn.close()
+    return updated
 
 def get_all_applications() -> List[dict]:
     """Get all applications/scored resumes."""

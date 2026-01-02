@@ -810,7 +810,7 @@
     // ==================== PAGES ====================
 
     // Dashboard Page
-        // Dashboard Page
+    // Dashboard Page
     function DashboardPage() {
       const [stats, setStats] = useState([]);
       const [recentActivity, setRecentActivity] = useState([]);
@@ -818,37 +818,37 @@
 
       useEffect(() => {
         const fetchData = async () => {
-           try {
-             // Fetch stats
-             const statsRes = await fetch(`${API_CONFIG.BASE_URL}/dashboard/stats/`);
-             const statsData = await statsRes.json();
-             
-             // Fetch candidates for recent activity
-             const candsRes = await fetch(`${API_CONFIG.BASE_URL}/candidates/`);
-             const candsData = await candsRes.json();
-             const apps = candsData.candidates || [];
+          try {
+            // Fetch stats
+            const statsRes = await fetch(`${API_CONFIG.BASE_URL}/dashboard/stats/`);
+            const statsData = await statsRes.json();
 
-             setStats([
-               { label: 'Total Candidates', value: statsData.total, change: '+12%', icon: <Icons.Users /> },
-               { label: 'Shortlisted', value: statsData.shortlisted, change: '+5%', icon: <Icons.Award /> },
-               { label: 'Avg Score', value: `${statsData.avg_score}%`, change: '+2%', icon: <Icons.BarChart /> },
-               { label: 'Pending Review', value: statsData.pending, change: '-3%', icon: <Icons.Briefcase /> },
-             ]);
+            // Fetch candidates for recent activity
+            const candsRes = await fetch(`${API_CONFIG.BASE_URL}/candidates/`);
+            const candsData = await candsRes.json();
+            const apps = candsData.candidates || [];
 
-             // Map applications to recent activity
-             const recent = apps.slice(0, 5).map(app => ({
-                type: 'score',
-                title: 'Resume Scored',
-                candidate: app.candidate_name,
-                time: new Date(app.created_at).toLocaleDateString(),
-                score: app.score
-             }));
-             setRecentActivity(recent);
-             setLoading(false);
-           } catch (e) {
-             console.error("Dashboard error", e);
-             setLoading(false);
-           }
+            setStats([
+              { label: 'Total Candidates', value: statsData.total, change: '+12%', icon: <Icons.Users /> },
+              { label: 'Shortlisted', value: statsData.shortlisted, change: '+5%', icon: <Icons.Award /> },
+              { label: 'Avg Score', value: `${statsData.avg_score}%`, change: '+2%', icon: <Icons.BarChart /> },
+              { label: 'Pending Review', value: statsData.pending, change: '-3%', icon: <Icons.Briefcase /> },
+            ]);
+
+            // Map applications to recent activity
+            const recent = apps.slice(0, 5).map(app => ({
+              type: 'score',
+              title: 'Resume Scored',
+              candidate: app.candidate_name,
+              time: new Date(app.created_at).toLocaleDateString(),
+              score: app.score
+            }));
+            setRecentActivity(recent);
+            setLoading(false);
+          } catch (e) {
+            console.error("Dashboard error", e);
+            setLoading(false);
+          }
         };
         fetchData();
       }, []);
@@ -937,7 +937,7 @@
                   <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{activity.time}</div>
                 </div>
               )) : (
-                 <div style={{ color: 'var(--text-muted)', padding: '20px' }}>No recent activity</div>
+                <div style={{ color: 'var(--text-muted)', padding: '20px' }}>No recent activity</div>
               )}
             </div>
 
@@ -987,56 +987,84 @@
 
 
     // Resume Scoring Page
-        // Resume Scoring Page
+    // Resume Scoring Page
+
+
     function ResumeScorePage() {
       const [jobDescription, setJobDescription] = useState('');
-      const [resumeFile, setResumeFile] = useState(null);
+      const [resumeFiles, setResumeFiles] = useState([]); // Changed to array
       const [candidateName, setCandidateName] = useState('');
       const [isDragActive, setIsDragActive] = useState(false);
       const [loading, setLoading] = useState(false);
-      const [result, setResult] = useState(null);
+      const [results, setResults] = useState(null); // Changed to hold multiple results or single result object
       const [error, setError] = useState(null);
       const fileInputRef = useRef(null);
 
       const handleDrop = useCallback((e) => {
         e.preventDefault();
         setIsDragActive(false);
-        const file = e.dataTransfer.files[0];
-        if (file && (file.name.endsWith('.pdf') || file.name.endsWith('.docx'))) {
-          setResumeFile(file);
+        const files = Array.from(e.dataTransfer.files).filter(file => file.name.endsWith('.pdf') || file.name.endsWith('.docx'));
+        if (files.length > 0) {
+          setResumeFiles(prev => [...prev, ...files].slice(0, 5)); // Limit to 5
         }
       }, []);
 
       const handleFileSelect = (e) => {
-        const file = e.target.files[0];
-        if (file) setResumeFile(file);
+        const files = Array.from(e.target.files).filter(file => file.name.endsWith('.pdf') || file.name.endsWith('.docx'));
+        if (files.length > 0) {
+          setResumeFiles(prev => [...prev, ...files].slice(0, 5));
+        }
+      };
+
+      const removeFile = (index) => {
+        setResumeFiles(prev => prev.filter((_, i) => i !== index));
       };
 
       const handleSubmit = async () => {
-        if (!jobDescription || !resumeFile) return;
+        if (!jobDescription || resumeFiles.length === 0) return;
 
         setLoading(true);
         setError(null);
-        setResult(null);
+        setResults(null);
 
         try {
           const formData = new FormData();
           formData.append('job_description', jobDescription);
-          formData.append('resume_file', resumeFile);
-          if (candidateName) formData.append('candidate_name', candidateName);
 
-          const response = await fetch(`${API_CONFIG.BASE_URL}/score_resume/`, {
+          let endpoint = '';
+
+          if (resumeFiles.length === 1) {
+            // Single file mode
+            formData.append('resume_file', resumeFiles[0]);
+            if (candidateName) formData.append('candidate_name', candidateName);
+            endpoint = `${API_CONFIG.BASE_URL}/score_resume/`;
+          } else {
+            // Batch mode
+            resumeFiles.forEach(file => {
+              formData.append('resume_files', file);
+            });
+            endpoint = `${API_CONFIG.BASE_URL}/score_resumes_batch/`;
+          }
+
+          const response = await fetch(endpoint, {
             method: 'POST',
             body: formData,
           });
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.detail || 'Failed to analyze resume');
+            throw new Error(errorData.detail || 'Failed to analyze resume(s)');
           }
 
           const data = await response.json();
-          setResult(data);
+
+          // Normalize results
+          if (resumeFiles.length === 1) {
+            setResults([data]); // Wrap single result in array
+          } else {
+            setResults(data.results);
+          }
+
         } catch (err) {
           setError(err.message);
         } finally {
@@ -1048,10 +1076,10 @@
         <div>
           <div style={styles.pageHeader} className="animate-in">
             <h1 style={styles.pageTitle}>
-              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-primary)' }}>Resume</span> Scoring
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-primary)' }}>Batch Resume</span> Scoring
             </h1>
             <p style={styles.pageSubtitle}>
-              Upload a resume and job description to get an instant AI-powered compatibility score.
+              Upload up to 5 resumes to compare candidates against your job description instantly.
             </p>
           </div>
 
@@ -1067,18 +1095,21 @@
                 </div>
               </div>
 
-               <div style={styles.formGroup}>
-                <label style={styles.label}>Candidate Name (Optional)</label>
-                <div style={{ position: 'relative' }}>
-                  <Icons.Users style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', width: '16px' }} />
-                  <input
-                    style={{ ...styles.input, paddingLeft: '36px' }}
-                    placeholder="e.g. John Doe"
-                    value={candidateName}
-                    onChange={(e) => setCandidateName(e.target.value)}
-                  />
+              {/* Only show Candidate Name if 1 file is selected */}
+              {resumeFiles.length <= 1 && (
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Candidate Name (Optional)</label>
+                  <div style={{ position: 'relative' }}>
+                    <Icons.Users style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', width: '16px' }} />
+                    <input
+                      style={{ ...styles.input, paddingLeft: '36px' }}
+                      placeholder="e.g. John Doe"
+                      value={candidateName}
+                      onChange={(e) => setCandidateName(e.target.value)}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div style={styles.formGroup}>
                 <label style={styles.label}>Job Description</label>
@@ -1093,7 +1124,7 @@
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.label}>Resume Upload</label>
+                <label style={styles.label}>Resume Upload (Max 5)</label>
                 <div
                   style={styles.dropzone(isDragActive)}
                   onDragOver={(e) => { e.preventDefault(); setIsDragActive(true); }}
@@ -1107,15 +1138,42 @@
                     style={{ display: 'none' }}
                     onChange={handleFileSelect}
                     accept=".pdf,.docx"
+                    multiple
                   />
                   <div style={{ marginBottom: '12px', color: 'var(--accent-primary)' }}>
                     <Icons.Upload />
                   </div>
                   <div style={{ fontWeight: '500', marginBottom: '4px' }}>
-                    {resumeFile ? resumeFile.name : 'Click to upload or drag & drop'}
+                    {resumeFiles.length > 0
+                      ? `${resumeFiles.length} file(s) selected`
+                      : 'Click to upload or drag & drop'}
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>PDF or DOCX (Max 5MB)</div>
                 </div>
+
+                {resumeFiles.length > 0 && (
+                  <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {resumeFiles.map((file, i) => (
+                      <div key={i} style={{
+                        background: 'var(--bg-tertiary)',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        <span>{file.name}</span>
+                        <button
+                          onClick={() => removeFile(i)}
+                          style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                        >
+                          <Icons.X />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {error && (
@@ -1127,9 +1185,9 @@
               <button
                 style={{ ...styles.button('primary'), width: '100%' }}
                 onClick={handleSubmit}
-                disabled={loading || !jobDescription || !resumeFile}
+                disabled={loading || !jobDescription || resumeFiles.length === 0}
               >
-                {loading ? 'Analyzing...' : <>Analyze Match <Icons.ChevronRight /></>}
+                {loading ? 'Analyzing...' : <>Analyze Match ({resumeFiles.length}) <Icons.ChevronRight /></>}
               </button>
             </div>
 
@@ -1139,17 +1197,38 @@
                   <Icons.Award />
                 </div>
                 <div>
-                  <h3 style={styles.cardTitle}>Analysis Result</h3>
+                  <h3 style={styles.cardTitle}>Analysis Results</h3>
                   <p style={styles.cardDescription}>AI-generated score and insights</p>
                 </div>
               </div>
 
-              {result ? (
-                <div style={{ textAlign: 'center' }}>
-                  <ScoreCircle score={result.score} />
-                  <p style={{ marginTop: '24px', lineHeight: '1.6', color: 'var(--text-primary)', textAlign: 'left' }}>
-                    {result.explanation}
-                  </p>
+              {results ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  {results.map((result, idx) => (
+                    <div key={idx} style={{
+                      padding: '20px',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '12px',
+                      background: 'var(--bg-secondary)'
+                    }}>
+                      {result.filename && (
+                        <div style={{
+                          fontWeight: '600',
+                          marginBottom: '16px',
+                          paddingBottom: '8px',
+                          borderBottom: '1px solid var(--border-color)'
+                        }}>
+                          {result.filename}
+                        </div>
+                      )}
+                      <div style={{ textAlign: 'center' }}>
+                        <ScoreCircle score={result.score} />
+                        <p style={{ marginTop: '16px', lineHeight: '1.6', color: 'var(--text-primary)', textAlign: 'left', fontSize: '14px' }}>
+                          {result.explanation}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
@@ -1407,7 +1486,7 @@
       );
     }
 
-        // Voice Agent Page
+    // Voice Agent Page
     function VoiceAgentPage() {
       const [isConnected, setIsConnected] = useState(false);
       const [isListening, setIsListening] = useState(false); // Controls mic mute/unmute
@@ -1431,17 +1510,17 @@
         try {
           const formData = new FormData();
           formData.append('candidate_name', user.full_name || 'Candidate');
-          
+
           const response = await fetch(`${API_CONFIG.BASE_URL}/realtime/session/`, {
             method: 'POST',
             body: formData,
           });
-          
+
           if (!response.ok) throw new Error('Failed to get session token');
-          
+
           const data = await response.json();
           if (!data.success) throw new Error(data.message);
-          
+
           return data.session.client_secret.value;
         } catch (err) {
           console.error("Token Error:", err);
@@ -1471,14 +1550,14 @@
           // Setup Data Channel for events
           const dc = pc.createDataChannel("oai-events");
           dataChannelRef.current = dc;
-          
+
           dc.onopen = () => {
             console.log("Data channel open");
             const responseCreate = {
               type: "response.create",
               response: {
                 modalities: ["audio", "text"],
-                instructions: `Start the interview now. The user is ${user.full_name || 'the candidate'}. Say hello properly.` 
+                instructions: `Start the interview now. The user is ${user.full_name || 'the candidate'}. Say hello properly.`
               }
             };
             dc.send(JSON.stringify(responseCreate));
@@ -1488,9 +1567,9 @@
             try {
               const event = JSON.parse(e.data);
               if (event.type === 'response.audio_transcript.done') {
-                 setTranscript(prev => [...prev, { role: 'assistant', content: event.transcript }]);
+                setTranscript(prev => [...prev, { role: 'assistant', content: event.transcript }]);
               } else if (event.type === 'conversation.item.input_audio_transcription.completed') {
-                 setTranscript(prev => [...prev, { role: 'user', content: event.transcript }]);
+                setTranscript(prev => [...prev, { role: 'user', content: event.transcript }]);
               }
             } catch (err) {
               console.error("Event error", err);
@@ -1509,7 +1588,7 @@
           // 5. Connect to OpenAI Realtime API
           const baseUrl = "https://api.openai.com/v1/realtime";
           const model = "gpt-4o-realtime-preview-2024-12-17";
-          
+
           const response = await fetch(`${baseUrl}?model=${model}`, {
             method: "POST",
             body: offer.sdp,
@@ -1564,7 +1643,7 @@
 
       return (
         <div>
-           <audio ref={audioRef} autoPlay />
+          <audio ref={audioRef} autoPlay />
 
           <div style={styles.pageHeader} className="animate-in">
             <h1 style={styles.pageTitle}>
@@ -1579,23 +1658,23 @@
             <div style={styles.card} className="animate-in delay-1">
               {!isConnected ? (
                 <div style={{ padding: '40px', textAlign: 'center' }}>
-                  <div style={{ 
-                    width: '80px', height: '80px', borderRadius: '50%', 
-                    background: 'var(--bg-tertiary)', display: 'flex', 
-                    alignItems: 'center', justifyContent: 'center', 
-                    margin: '0 auto 24px', color: 'var(--accent-purple)' 
+                  <div style={{
+                    width: '80px', height: '80px', borderRadius: '50%',
+                    background: 'var(--bg-tertiary)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 24px', color: 'var(--accent-purple)'
                   }}>
                     <Icons.Mic />
                   </div>
                   <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '12px' }}>Ready for your interview?</h2>
                   <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', maxWidth: '400px', margin: '0 auto 32px' }}>
-                    The AI interviewer will ask you questions about your background and experience. 
+                    The AI interviewer will ask you questions about your background and experience.
                     Speak naturally and clearly. The session will be recorded for HR review.
                   </p>
-                  
+
                   {error && (
-                    <div style={{ 
-                      padding: '12px', background: 'rgba(239, 68, 68, 0.1)', 
+                    <div style={{
+                      padding: '12px', background: 'rgba(239, 68, 68, 0.1)',
                       color: 'var(--danger)', borderRadius: '8px', marginBottom: '24px',
                       fontSize: '14px'
                     }}>
@@ -1615,21 +1694,21 @@
                     onClick={handleStartCall}
                     disabled={status === 'connecting'}
                   >
-                   {status === 'connecting' ? 'Connecting...' : <span>Start Interview</span>}
+                    {status === 'connecting' ? 'Connecting...' : <span>Start Interview</span>}
                   </button>
                 </div>
               ) : (
                 <div style={styles.voiceAgent}>
                   <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                    <div style={{ 
-                        fontSize: '14px', fontWeight: '600', 
-                        color: 'var(--success)', display: 'inline-flex', 
-                        alignItems: 'center', gap: '8px',
-                        padding: '6px 12px', background: 'rgba(34, 197, 94, 0.1)',
-                        borderRadius: '20px'
+                    <div style={{
+                      fontSize: '14px', fontWeight: '600',
+                      color: 'var(--success)', display: 'inline-flex',
+                      alignItems: 'center', gap: '8px',
+                      padding: '6px 12px', background: 'rgba(34, 197, 94, 0.1)',
+                      borderRadius: '20px'
                     }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'currentColor', animation: 'pulse 1s infinite' }} />
-                        Live Interview in Progress
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'currentColor', animation: 'pulse 1s infinite' }} />
+                      Live Interview in Progress
                     </div>
                   </div>
 
@@ -1655,7 +1734,7 @@
                   <div style={{ marginBottom: '24px' }}>
                     <Waveform isActive={isListening} bars={16} />
                     <p style={{ textAlign: 'center', marginTop: '16px', color: 'var(--text-secondary)' }}>
-                        {isListening ? 'Listening...' : 'Microphone muted'}
+                      {isListening ? 'Listening...' : 'Microphone muted'}
                     </p>
                   </div>
 
@@ -1716,38 +1795,72 @@
 
 
     // Candidates Page
-        // Candidates Page
-        // Candidates Page
+    // Candidates Page
+    // Candidates Page
+    // Candidates Page
     function CandidatesPage() {
       const [selectedCandidate, setSelectedCandidate] = useState(null);
-      const [filter, setFilter] = useState('all');
+      const [filter, setFilter] = useState('pending'); // Default to pending (Inbox)
       const [candidates, setCandidates] = useState([]);
       const [loading, setLoading] = useState(true);
+      const [actionLoading, setActionLoading] = useState(false);
 
       useEffect(() => {
-        const fetchCandidates = async () => {
-          try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/candidates/`);
-            const data = await response.json();
-            // Map backend data to frontend expectations
-            const mapped = (data.candidates || []).map(app => ({
-                id: app.id,
-                name: app.candidate_name,
-                role: app.job_role || 'Applicant',
-                score: app.score,
-                status: app.status,
-                interviewed: false, 
-                resumeUrl: app.resume_url
-            }));
-            setCandidates(mapped);
-          } catch (e) {
-            console.error("Candidates error", e);
-          } finally {
-            setLoading(false);
-          }
-        };
         fetchCandidates();
       }, []);
+
+      const fetchCandidates = async () => {
+        try {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/candidates/`);
+          const data = await response.json();
+          const mapped = (data.candidates || []).map(app => ({
+            id: app.id,
+            name: app.candidate_name,
+            role: app.job_role || 'Applicant',
+            score: app.score,
+            status: app.status,
+            interviewed: false,
+            resumeUrl: app.resume_url
+          }));
+          setCandidates(mapped);
+        } catch (e) {
+          console.error("Candidates error", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handleStatusUpdate = async (candidateId, newStatus) => {
+        setActionLoading(true);
+        try {
+          const formData = new FormData();
+          formData.append('status', newStatus);
+
+          const response = await fetch(`${API_CONFIG.BASE_URL}/candidates/${candidateId}/status/`, {
+            method: 'PUT',
+            body: formData
+          });
+
+          if (response.ok) {
+            // Update local state
+            setCandidates(prev => prev.map(c =>
+              c.id === candidateId ? { ...c, status: newStatus } : c
+            ));
+
+            // Deselect if moved out of current view
+            if (filter !== 'all' && newStatus !== filter) {
+              setSelectedCandidate(null);
+            } else {
+              // Update selected candidate status reference
+              setSelectedCandidate(prev => ({ ...prev, status: newStatus }));
+            }
+          }
+        } catch (err) {
+          console.error("Failed to update status", err);
+        } finally {
+          setActionLoading(false);
+        }
+      };
 
       const filteredCandidates = candidates.filter(c => filter === 'all' || c.status === filter);
 
@@ -1766,10 +1879,10 @@
 
           <Tabs
             tabs={[
-              { id: 'all', label: 'All Candidates' },
+              { id: 'pending', label: 'Inbox / New' },
               { id: 'shortlisted', label: 'Shortlisted' },
-              { id: 'pending', label: 'Pending' },
               { id: 'rejected', label: 'Rejected' },
+              { id: 'all', label: 'All Candidates' },
             ]}
             activeTab={filter}
             onChange={setFilter}
@@ -1787,37 +1900,43 @@
                 </div>
               </div>
 
-              {filteredCandidates.map((candidate) => (
-                <div
-                  key={candidate.id}
-                  style={{
-                    ...styles.candidateCard,
-                    borderColor: selectedCandidate?.id === candidate.id ? 'var(--accent-primary)' : 'transparent',
-                  }}
-                  onClick={() => setSelectedCandidate(candidate)}
-                >
-                  <div style={styles.avatar}>
-                    {candidate.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '600', marginBottom: '2px' }}>{candidate.name}</div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{candidate.role}</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{
-                      fontWeight: '700',
-                      fontSize: '18px',
-                      color: candidate.score >= 70 ? 'var(--success)' : candidate.score >= 50 ? 'var(--warning)' : 'var(--danger)',
-                      marginBottom: '4px'
-                    }}>
-                      {candidate.score}%
-                    </div>
-                    <span style={styles.statusBadge(candidate.status === 'shortlisted' ? 'completed' : candidate.status === 'rejected' ? 'failed' : 'pending')}>
-                      {candidate.status}
-                    </span>
-                  </div>
+              {filteredCandidates.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  No candidates found in this section.
                 </div>
-              ))}
+              ) : (
+                filteredCandidates.map((candidate) => (
+                  <div
+                    key={candidate.id}
+                    style={{
+                      ...styles.candidateCard,
+                      borderColor: selectedCandidate?.id === candidate.id ? 'var(--accent-primary)' : 'transparent',
+                    }}
+                    onClick={() => setSelectedCandidate(candidate)}
+                  >
+                    <div style={styles.avatar}>
+                      {candidate.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', marginBottom: '2px' }}>{candidate.name}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{candidate.role}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{
+                        fontWeight: '700',
+                        fontSize: '18px',
+                        color: candidate.score >= 70 ? 'var(--success)' : candidate.score >= 50 ? 'var(--warning)' : 'var(--danger)',
+                        marginBottom: '4px'
+                      }}>
+                        {candidate.score}%
+                      </div>
+                      <span style={styles.statusBadge(candidate.status === 'shortlisted' ? 'completed' : candidate.status === 'rejected' ? 'failed' : 'pending')}>
+                        {candidate.status}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             <div style={styles.card} className="animate-in delay-2">
@@ -1830,9 +1949,9 @@
                     <div>
                       <h3 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '4px' }}>{selectedCandidate.name}</h3>
                       <div style={{ color: 'var(--text-secondary)' }}>{selectedCandidate.role}</div>
-                      
+
                       {selectedCandidate.resumeUrl && (
-                        <a 
+                        <a
                           href={selectedCandidate.resumeUrl}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -1865,6 +1984,44 @@
                     </div>
                   </div>
 
+                  {/* ACTION BUTTONS */}
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                    <button
+                      onClick={() => handleStatusUpdate(selectedCandidate.id, 'shortlisted')}
+                      disabled={actionLoading || selectedCandidate.status === 'shortlisted'}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: selectedCandidate.status === 'shortlisted' ? 'var(--success)' : 'var(--bg-tertiary)',
+                        color: selectedCandidate.status === 'shortlisted' ? 'white' : 'var(--success)',
+                        fontWeight: '600',
+                        cursor: actionLoading ? 'wait' : 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {selectedCandidate.status === 'shortlisted' ? 'Shortlisted' : 'Shortlist'}
+                    </button>
+                    <button
+                      onClick={() => handleStatusUpdate(selectedCandidate.id, 'rejected')}
+                      disabled={actionLoading || selectedCandidate.status === 'rejected'}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: selectedCandidate.status === 'rejected' ? 'var(--danger)' : 'var(--bg-tertiary)',
+                        color: selectedCandidate.status === 'rejected' ? 'white' : 'var(--danger)',
+                        fontWeight: '600',
+                        cursor: actionLoading ? 'wait' : 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {selectedCandidate.status === 'rejected' ? 'Rejected' : 'Reject'}
+                    </button>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
                     <div style={styles.configSection}>
                       <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Match Score</div>
@@ -1887,9 +2044,9 @@
                   </div>
                 </>
               ) : (
-                 <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-muted)' }}>
-                   Select a candidate to view details
-                 </div>
+                <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-muted)' }}>
+                  Select a candidate to view details
+                </div>
               )}
             </div>
           </div>
@@ -2060,8 +2217,184 @@
       );
     }
 
+    // ==================== LANDING PAGE ====================
+    function LandingPage({ onLogin, onRegister }) {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          background: 'var(--bg-primary)',
+          backgroundImage: 'var(--gradient-mesh)',
+          color: 'var(--text-primary)',
+        }}>
+          {/* Landing Header */}
+          <header style={{
+            padding: '20px 40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            maxWidth: '1200px',
+            margin: '0 auto',
+          }}>
+            <div style={styles.logo}>
+              <div style={styles.logoIcon}>
+                <Icons.Zap />
+              </div>
+              <span>TalentFlow<span style={{ color: 'var(--accent-primary)' }}>AI</span></span>
+            </div>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <button
+                onClick={onLogin}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                }}
+              >
+                Log In
+              </button>
+              <button
+                onClick={onRegister}
+                style={{
+                  ...styles.button('primary'),
+                  padding: '10px 24px',
+                }}
+              >
+                Get Started <Icons.ChevronRight />
+              </button>
+            </div>
+          </header>
+
+          {/* Hero Section */}
+          <section style={{
+            textAlign: 'center',
+            padding: '80px 20px',
+            maxWidth: '900px',
+            margin: '0 auto',
+          }} className="animate-in">
+            <div style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              borderRadius: '30px',
+              background: 'rgba(13, 148, 136, 0.1)',
+              color: 'var(--accent-primary)',
+              fontWeight: '600',
+              fontSize: '14px',
+              marginBottom: '24px',
+            }}>
+              ✨ The Future of Recruitment is Here
+            </div>
+            <h1 style={{
+              fontSize: '64px',
+              lineHeight: '1.1',
+              marginBottom: '24px',
+              fontWeight: '700',
+              letterSpacing: '-1px',
+            }}>
+              Hire Smarter with <br />
+              <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent-primary)' }}>Intelligent AI</span> Agents
+            </h1>
+            <p style={{
+              fontSize: '20px',
+              color: 'var(--text-secondary)',
+              marginBottom: '40px',
+              maxWidth: '600px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              lineHeight: '1.6',
+            }}>
+              Automate resume scoring, generate job descriptions, and conduct voice interviews—all in one platform.
+            </p>
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '80px' }}>
+              <button
+                onClick={onRegister}
+                style={{
+                  ...styles.button('primary'),
+                  padding: '16px 32px',
+                  fontSize: '18px',
+                }}
+              >
+                Start For Free
+              </button>
+              <button
+                onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}
+                style={{
+                  ...styles.button('secondary'),
+                  padding: '16px 32px',
+                  fontSize: '18px',
+                  background: '#fff',
+                }}
+              >
+                Learn More
+              </button>
+            </div>
+          </section>
+
+          {/* Features Section */}
+          <section id="features" style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '0 20px 100px',
+          }}>
+            <div style={styles.grid}>
+              {[
+                {
+                  title: "Resume Scoring",
+                  desc: "Instantly score resumes against job descriptions to find the perfect match with detailed insights.",
+                  icon: <Icons.FileText />,
+                  color: "var(--accent-primary)"
+                },
+                {
+                  title: "Voice Interview Agent",
+                  desc: "Conduct first-round screening calls automatically with our human-like AI voice assistant.",
+                  icon: <Icons.Mic />,
+                  color: "var(--accent-purple)"
+                },
+                {
+                  title: "JD Generator",
+                  desc: "Create professional, SEO-optimized job descriptions in seconds by just entering basic details.",
+                  icon: <Icons.Briefcase />,
+                  color: "var(--accent-blue)"
+                },
+                {
+                  title: "Candidate Pipeline",
+                  desc: "Track and manage candidates through every stage of the hiring process with a unified dashboard.",
+                  icon: <Icons.Users />,
+                  color: "var(--accent-orange)"
+                }
+              ].map((feature, i) => (
+                <div key={i} style={{
+                  ...styles.card,
+                  padding: '40px',
+                  cursor: 'default',
+                }} className={`animate-in delay-${i + 1}`}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '16px',
+                    background: `linear-gradient(135deg, ${feature.color}20 0%, ${feature.color}10 100%)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: feature.color,
+                    marginBottom: '24px',
+                  }}>
+                    <div style={{ transform: 'scale(1.5)' }}>{feature.icon}</div>
+                  </div>
+                  <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '12px' }}>{feature.title}</h3>
+                  <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>{feature.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      );
+    }
+
     // ==================== LOGIN PAGE ====================
-    function LoginPage({ onLogin, onSwitchToRegister }) {
+    function LoginPage({ onLogin, onSwitchToRegister, onBack }) {
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
       const [loading, setLoading] = useState(false);
@@ -2105,6 +2438,28 @@
           backgroundImage: 'var(--gradient-mesh)',
           padding: '20px',
         }}>
+          {onBack && (
+            <button
+              onClick={onBack}
+              style={{
+                position: 'fixed',
+                top: '24px',
+                left: '24px',
+                background: 'none',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontWeight: '600',
+                zIndex: 10,
+              }}
+            >
+              <span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><Icons.ChevronRight /></span>
+              Back to Home
+            </button>
+          )}
           <div style={{
             width: '100%',
             maxWidth: '440px',
@@ -2223,7 +2578,7 @@
     }
 
     // ==================== REGISTER PAGE ====================
-    function RegisterPage({ onRegister, onSwitchToLogin }) {
+    function RegisterPage({ onRegister, onSwitchToLogin, onBack }) {
       const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -2303,6 +2658,28 @@
           backgroundImage: 'var(--gradient-mesh)',
           padding: '20px',
         }}>
+          {onBack && (
+            <button
+              onClick={onBack}
+              style={{
+                position: 'fixed',
+                top: '24px',
+                left: '24px',
+                background: 'none',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontWeight: '600',
+                zIndex: 10,
+              }}
+            >
+              <span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><Icons.ChevronRight /></span>
+              Back to Home
+            </button>
+          )}
           <div style={{
             width: '100%',
             maxWidth: '480px',
@@ -2591,7 +2968,7 @@
       const [currentPage, setCurrentPage] = useState('dashboard');
       const [user, setUser] = useState(null);
       const [token, setToken] = useState(null);
-      const [authPage, setAuthPage] = useState('login');
+      const [authPage, setAuthPage] = useState('landing');
 
       // Check for existing session on mount
       useEffect(() => {
@@ -2620,11 +2997,20 @@
 
       // If not logged in, show login/register pages
       if (!user) {
+        if (authPage === 'landing') {
+          return (
+            <LandingPage
+              onLogin={() => setAuthPage('login')}
+              onRegister={() => setAuthPage('register')}
+            />
+          );
+        }
         if (authPage === 'login') {
           return (
             <LoginPage
               onLogin={handleLogin}
               onSwitchToRegister={() => setAuthPage('register')}
+              onBack={() => setAuthPage('landing')}
             />
           );
         } else {
@@ -2632,6 +3018,7 @@
             <RegisterPage
               onRegister={handleLogin}
               onSwitchToLogin={() => setAuthPage('login')}
+              onBack={() => setAuthPage('landing')}
             />
           );
         }

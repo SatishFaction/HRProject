@@ -64,6 +64,10 @@ class ScoreResponse(BaseModel):
     """Defines the structure of the API response for scoring."""
     score: float
     explanation: str
+    filename: Optional[str] = None
+
+class BatchScoreResponse(BaseModel):
+    results: list[ScoreResponse]
 
 class JobRoleInput(BaseModel):
     """Defines the structure for the job description creation request."""

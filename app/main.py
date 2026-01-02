@@ -7,8 +7,9 @@ from . import services, utils, database
 from .models import (
     ScoreResponse, JobRoleInput, JobDescriptionResponse,
     LoginRequest, LoginResponse, RegisterRequest, RegisterResponse,
-    User, UserRole
+    User, UserRole, BatchScoreResponse
 )
+from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -171,6 +172,69 @@ async def score_resume(
     
     return ScoreResponse(**score_data)
 
+@app.post("/score_resumes_batch/", response_model=BatchScoreResponse, tags=["Resume Scoring"])
+async def score_resumes_batch(
+    job_description: str = Form(...),
+    resume_files: List[UploadFile] = File(...),
+):
+    """
+    Score multiple resumes against a job description in a batch.
+    **HR Only**
+    """
+    results = []
+    
+    # Process up to 5 files
+    for resume_file in resume_files[:5]:
+        try:
+            file_bytes, file_type = utils.get_text_from_resume(resume_file)
+            resume_text = services.extract_resume_text(file_bytes, file_type)
+
+            if not resume_text.strip():
+                # Handle empty text case
+                results.append(ScoreResponse(
+                    score=0,
+                    explanation="Could not extract text from this file.",
+                    filename=resume_file.filename
+                ))
+                continue
+
+            score_data = services.get_llm_score(resume_text, job_description)
+            
+            # Save file to disk
+            file_ext = os.path.splitext(resume_file.filename)[1]
+            unique_filename = f"{uuid.uuid4()}{file_ext}"
+            file_path = f"uploads/{unique_filename}"
+            
+            with open(file_path, "wb") as f:
+                f.write(file_bytes)
+
+            # Save to database (Assuming candidate name is filename for now or "Unknown")
+            candidate_name = os.path.splitext(resume_file.filename)[0]
+            
+            database.create_application(
+                candidate_name=candidate_name,
+                score=score_data.get('score', 0),
+                match_details=score_data.get('explanation', ''),
+                job_role="Applicant", 
+                candidate_email=None,
+                resume_path=unique_filename
+            )
+            
+            results.append(ScoreResponse(
+                score=score_data.get('score', 0),
+                explanation=score_data.get('explanation', ''),
+                filename=resume_file.filename
+            ))
+            
+        except Exception as e:
+            results.append(ScoreResponse(
+                score=0, 
+                explanation=f"Error processing file: {str(e)}", 
+                filename=resume_file.filename
+            ))
+
+    return BatchScoreResponse(results=results)
+
 @app.post("/create_job_description/", response_model=JobDescriptionResponse, tags=["Job Description"])
 async def create_job_description(job_details: JobRoleInput):
     """
@@ -201,6 +265,21 @@ async def get_all_candidates():
         candidates.append(CandidateApplication(**app_dict))
         
     return {"candidates": candidates}
+
+@app.put("/candidates/{app_id}/status/", tags=["Candidates"])
+async def update_candidate_status(app_id: str, status: str = Form(...)):
+    """
+    Update the status of a candidate application.
+    **HR Only**
+    """
+    if status not in ['pending', 'shortlisted', 'rejected']:
+        raise HTTPException(status_code=400, detail="Invalid status")
+        
+    success = database.update_application_status(app_id, status)
+    if not success:
+        raise HTTPException(status_code=404, detail="Application not found")
+        
+    return {"success": True, "message": f"Status updated to {status}"}
 
 @app.get("/dashboard/stats/", tags=["Dashboard"])
 async def get_dashboard_stats():
