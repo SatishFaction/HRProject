@@ -1,0 +1,20 @@
+# Database files
+*.db
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Uploads (user content)
+uploads/
