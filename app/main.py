@@ -10,8 +10,12 @@ from .models import (
     LoginRequest, LoginResponse, RegisterRequest, RegisterResponse,
     User, UserRole, BatchScoreResponse,
     JobPostingCreate, JobPosting, JobPostingResponse, JobPostingsListResponse,
-    JobApplication, JobApplicationResponse, JobApplicationsListResponse
+    JobApplication, JobApplicationResponse, JobApplicationsListResponse,
+    BulkEmailRequest
 )
+from .config import settings
+# import resend  # Removed in favor of SMTP
+from .email_service import EmailService
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -430,7 +434,17 @@ async def apply_to_job(
     job_id: str,
     token: str = Form(...),
     resume_file: UploadFile = File(None),
-    cover_letter: str = Form(None)
+    cover_letter: str = Form(None),
+    # New fields
+    applicant_name: str = Form(None), # Optional override
+    relevant_experience: str = Form(None),
+    overall_experience: str = Form(None),
+    current_location: str = Form(None),
+    preferred_location: str = Form(None),
+    current_ctc: str = Form(None),
+    expected_ctc: str = Form(None),
+    current_company: str = Form(None),
+    notice_period: str = Form(None)
 ):
     """
     Apply to a job posting.
@@ -469,13 +483,24 @@ async def apply_to_job(
         resume_path = unique_filename
 
     # Create application
+    # Use provided name or fallback to user profile name
+    final_name = applicant_name if applicant_name else user_data['full_name']
+    
     app_data = database.create_job_application(
         job_id=job_id,
         candidate_id=user_data['id'],
-        candidate_name=user_data['full_name'],
+        candidate_name=final_name,
         candidate_email=user_data['email'],
         resume_path=resume_path,
-        cover_letter=cover_letter
+        cover_letter=cover_letter,
+        relevant_experience=relevant_experience,
+        overall_experience=overall_experience,
+        current_location=current_location,
+        preferred_location=preferred_location,
+        current_ctc=current_ctc,
+        expected_ctc=expected_ctc,
+        current_company=current_company,
+        notice_period=notice_period
     )
 
     # Add resume URL if available
@@ -600,3 +625,57 @@ async def create_realtime_session(candidate_name: str = Form(...)):
             "message": f"Error: {str(e)}",
             "session": None
         }
+
+# ==================== EMAIL ENDPOINTS ====================
+
+@app.post("/email/bulk/", tags=["Email"])
+def send_bulk_email(request: BulkEmailRequest):
+    """
+    Send bulk emails to candidates using Gmail SMTP.
+    **HR Only**
+    """
+    # Determine credentials to use
+    sender = request.sender_email or settings.EMAIL_SENDER
+    password = request.app_password or settings.EMAIL_PASSWORD
+
+    if not sender or not password:
+         return {"success": False, "results": [], "error": "Email credentials not configured. Please provide them in settings or request."}
+
+    # Initialize Email Service
+    email_service = EmailService(sender, password)
+    
+    # Prepare recipients list
+    recipients = []
+    for email in request.candidate_emails:
+        # We can add name if available, for now just email
+        recipients.append({"email": email, "name": "Candidate"})
+    
+    # Process Content for Free Flowing Text
+    # If the user provides plain text without HTML tags, we format it nicely.
+    body_content = request.html_content
+    if not ("<" in body_content and ">" in body_content):
+        # Convert newlines to breaks
+        formatted_text = body_content.replace("\n", "<br>")
+        # Wrap in a nice template
+        body_content = f"""
+        <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6;">
+            {formatted_text}
+        </div>
+        """
+
+    # Send emails
+    send_results = email_service.send_bulk(
+        recipients=recipients,
+        subject=request.subject,
+        body_template=body_content,
+        html=True
+    )
+    
+    # Format results to match frontend expectation
+    formatted_results = []
+    for s in send_results["success"]:
+        formatted_results.append({"email": s["email"], "status": "sent"})
+    for f in send_results["failed"]:
+        formatted_results.append({"email": f["email"], "status": "failed", "error": f["error"]})
+            
+    return {"success": True, "results": formatted_results}

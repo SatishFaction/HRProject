@@ -101,6 +101,19 @@ def init_db():
         )
     ''')
 
+    # Migration: Add new candidate fields to job_applications if they don't exist
+    new_columns = [
+        'relevant_experience', 'overall_experience', 'current_location', 
+        'preferred_location', 'current_ctc', 'expected_ctc', 
+        'current_company', 'notice_period'
+    ]
+    
+    for col in new_columns:
+        try:
+            cursor.execute(f"ALTER TABLE job_applications ADD COLUMN {col} TEXT")
+        except sqlite3.OperationalError:
+            pass # Column already exists
+
     conn.commit()
     conn.close()
     print(f"Database initialized at: {DB_PATH}")
@@ -416,7 +429,15 @@ def delete_job_posting(job_id: str) -> bool:
 
 def create_job_application(job_id: str, candidate_id: str, candidate_name: str,
                            candidate_email: str, resume_path: Optional[str] = None,
-                           cover_letter: Optional[str] = None) -> dict:
+                           cover_letter: Optional[str] = None,
+                           relevant_experience: Optional[str] = None,
+                           overall_experience: Optional[str] = None,
+                           current_location: Optional[str] = None,
+                           preferred_location: Optional[str] = None,
+                           current_ctc: Optional[str] = None,
+                           expected_ctc: Optional[str] = None,
+                           current_company: Optional[str] = None,
+                           notice_period: Optional[str] = None) -> dict:
     """Create a new job application."""
     conn = get_connection()
     cursor = conn.cursor()
@@ -425,10 +446,21 @@ def create_job_application(job_id: str, candidate_id: str, candidate_name: str,
     created_at = datetime.now().isoformat()
 
     cursor.execute('''
-        INSERT INTO job_applications (id, job_id, candidate_id, candidate_name, candidate_email,
-                                      resume_path, cover_letter, status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)
-    ''', (app_id, job_id, candidate_id, candidate_name, candidate_email, resume_path, cover_letter, created_at))
+        INSERT INTO job_applications (
+            id, job_id, candidate_id, candidate_name, candidate_email,
+            resume_path, cover_letter, status, created_at,
+            relevant_experience, overall_experience, current_location,
+            preferred_location, current_ctc, expected_ctc,
+            current_company, notice_period
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        app_id, job_id, candidate_id, candidate_name, candidate_email, 
+        resume_path, cover_letter, created_at,
+        relevant_experience, overall_experience, current_location,
+        preferred_location, current_ctc, expected_ctc,
+        current_company, notice_period
+    ))
 
     conn.commit()
     conn.close()
@@ -442,7 +474,15 @@ def create_job_application(job_id: str, candidate_id: str, candidate_name: str,
         'resume_path': resume_path,
         'cover_letter': cover_letter,
         'status': 'pending',
-        'created_at': created_at
+        'created_at': created_at,
+        'relevant_experience': relevant_experience,
+        'overall_experience': overall_experience,
+        'current_location': current_location,
+        'preferred_location': preferred_location,
+        'current_ctc': current_ctc,
+        'expected_ctc': expected_ctc,
+        'current_company': current_company,
+        'notice_period': notice_period
     }
 
 def get_all_job_applications(job_id: Optional[str] = None) -> List[dict]:

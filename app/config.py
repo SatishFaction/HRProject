@@ -15,6 +15,13 @@ class Settings(BaseSettings):
 
     # OpenAI API Key for Interview Chatbot
     OPENAI_API_KEY: str = ""
+    
+    # Resend API Key (Deprecated/Optional if using SMTP)
+    RESEND_API_KEY: str = ""
+
+    # SMTP Email Settings
+    EMAIL_SENDER: str = ""
+    EMAIL_PASSWORD: str = ""
 
     # This tells Pydantic to load settings from a .env file
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding='utf-8', extra='ignore')

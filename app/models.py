@@ -179,6 +179,14 @@ class JobApplication(BaseModel):
     created_at: str
     job_title: Optional[str] = None
     company_name: Optional[str] = None
+    relevant_experience: Optional[str] = None
+    overall_experience: Optional[str] = None
+    current_location: Optional[str] = None
+    preferred_location: Optional[str] = None
+    current_ctc: Optional[str] = None
+    expected_ctc: Optional[str] = None
+    current_company: Optional[str] = None
+    notice_period: Optional[str] = None
 
 class JobApplicationResponse(BaseModel):
     """Response model for job application operations."""
@@ -189,3 +197,13 @@ class JobApplicationResponse(BaseModel):
 class JobApplicationsListResponse(BaseModel):
     """Response model for listing job applications."""
     applications: list[JobApplication]
+
+# ==================== EMAIL MODELS ====================
+
+class BulkEmailRequest(BaseModel):
+    """Request model for sending bulk emails."""
+    candidate_emails: list[str] = Field(..., description="List of candidate emails")
+    subject: str = Field("Hello World", example="Hello World")
+    html_content: str = Field("<p>Congrats on sending your <strong>first email</strong>!</p>", example="<p>Body</p>")
+    sender_email: Optional[str] = Field(None, description="Sender email address")
+    app_password: Optional[str] = Field(None, description="App password for the sender email")
