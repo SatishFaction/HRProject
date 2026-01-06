@@ -3210,7 +3210,7 @@
     }
 
     // ==================== LANDING PAGE ====================
-    function LandingPage({ onLogin, onRegister }) {
+    function LandingPage({ onLogin, onSignup }) {
       return (
         <div style={{
           minHeight: '100vh',
@@ -3234,6 +3234,17 @@
               <span>TalentFlow<span style={{ color: 'var(--accent-primary)' }}>AI</span></span>
             </div>
             <div style={{ display: 'flex', gap: '16px' }}>
+              <button
+                onClick={onSignup}
+                style={{
+                  ...styles.button('secondary'),
+                  padding: '12px 28px',
+                  fontSize: '15px',
+                  background: '#fff',
+                }}
+              >
+                Sign Up
+              </button>
               <button
                 onClick={onLogin}
                 style={{
@@ -3289,17 +3300,17 @@
             </p>
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '80px' }}>
               <button
-                onClick={onLogin}
+                onClick={onSignup}
                 style={{
                   ...styles.button('primary'),
                   padding: '16px 32px',
                   fontSize: '18px',
                 }}
               >
-                Login to Continue
+                Get Started Free
               </button>
               <button
-                onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}
+                onClick={onLogin}
                 style={{
                   ...styles.button('secondary'),
                   padding: '16px 32px',
@@ -3307,7 +3318,7 @@
                   background: '#fff',
                 }}
               >
-                Learn More
+                I Have an Account
               </button>
             </div>
           </section>
@@ -3374,7 +3385,7 @@
     }
 
     // ==================== LOGIN PAGE ====================
-    function LoginPage({ onLogin, onBack }) {
+    function LoginPage({ onLogin, onBack, onSignup }) {
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
       const [loading, setLoading] = useState(false);
@@ -3528,15 +3539,28 @@
                 </button>
               </form>
 
-              {/* Contact admin for account creation */}
+              {/* Sign up link */}
               <div style={{
                 textAlign: 'center',
                 marginTop: '24px',
                 paddingTop: '24px',
                 borderTop: '1px solid var(--border-color)',
               }}>
-                <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-                  Contact your administrator for account access
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                  Don't have an account?{' '}
+                  <button
+                    onClick={onSignup}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--accent-primary)',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                    }}
+                  >
+                    Sign up
+                  </button>
                 </p>
               </div>
             </div>
@@ -4650,7 +4674,8 @@
       const handleLogin = (userData, authToken) => {
         setUser(userData);
         setToken(authToken);
-        setCurrentPage('dashboard');
+        // Set default page based on role - HR gets dashboard, candidates get jobs
+        setCurrentPage(userData.role === 'hr' ? 'dashboard' : 'jobs');
       };
 
       const handleLogout = () => {
@@ -4661,20 +4686,31 @@
         setAuthPage('login');
       };
 
-      // If not logged in, show login pages
+      // If not logged in, show auth pages
       if (!user) {
         if (authPage === 'landing') {
           return (
             <LandingPage
               onLogin={() => setAuthPage('login')}
+              onSignup={() => setAuthPage('register')}
             />
           );
         }
-        // Only login page now - no more registration
+        if (authPage === 'register') {
+          return (
+            <RegisterPage
+              onRegister={handleLogin}
+              onSwitchToLogin={() => setAuthPage('login')}
+              onBack={() => setAuthPage('landing')}
+            />
+          );
+        }
+        // Login page
         return (
           <LoginPage
             onLogin={handleLogin}
             onBack={() => setAuthPage('landing')}
+            onSignup={() => setAuthPage('register')}
           />
         );
       }
@@ -4695,7 +4731,6 @@
       };
 
       const candidatePages = {
-        dashboard: () => <CandidateDashboard user={user} />,
         jobs: () => <JobListingsPage user={user} />,
         myapplications: () => <MyApplicationsPage user={user} />,
         voice: VoiceAgentPage,
@@ -4703,7 +4738,7 @@
       };
 
       const pages = isHR ? hrPages : candidatePages;
-      const PageComponent = pages[currentPage] || pages.dashboard;
+      const PageComponent = pages[currentPage] || (isHR ? pages.dashboard : pages.jobs);
 
       // Navigation items based on role
       const hrNavItems = [
@@ -4717,7 +4752,6 @@
       ];
 
       const candidateNavItems = [
-        { id: 'dashboard', label: 'Dashboard' },
         { id: 'jobs', label: 'Job Listings' },
         { id: 'myapplications', label: 'My Applications' },
         { id: 'voice', label: 'Interview' },
