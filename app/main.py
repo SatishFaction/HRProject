@@ -16,6 +16,7 @@ from .models import (
 from .config import settings
 # import resend  # Removed in favor of SMTP
 from .email_service import EmailService
+from .blob_service import blob_service
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -169,13 +170,13 @@ async def score_resume(
 
     score_data = services.get_llm_score(resume_text, job_description)
     
-    # Save file to disk
+    # Save file to Azure Blob Storage
     file_ext = os.path.splitext(resume_file.filename)[1]
     unique_filename = f"{uuid.uuid4()}{file_ext}"
-    file_path = f"uploads/{unique_filename}"
     
-    with open(file_path, "wb") as f:
-        f.write(file_bytes)
+    content_type = "application/pdf" if file_type == "pdf" else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    # Upload returns filename now
+    saved_filename = blob_service.upload_file(file_bytes, unique_filename, content_type)
 
     # Save to database
     if not candidate_name:
@@ -187,7 +188,7 @@ async def score_resume(
         match_details=score_data.get('explanation', ''),
         job_role="Applicant", 
         candidate_email=None,
-        resume_path=unique_filename # Save filename/path
+        resume_path=saved_filename # Save filename
     )
     
     return ScoreResponse(**score_data)
@@ -220,13 +221,12 @@ async def score_resumes_batch(
 
             score_data = services.get_llm_score(resume_text, job_description)
             
-            # Save file to disk
+            # Save file to Azure Blob Storage
             file_ext = os.path.splitext(resume_file.filename)[1]
             unique_filename = f"{uuid.uuid4()}{file_ext}"
-            file_path = f"uploads/{unique_filename}"
             
-            with open(file_path, "wb") as f:
-                f.write(file_bytes)
+            content_type = "application/pdf" if file_type == "pdf" else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            saved_filename = blob_service.upload_file(file_bytes, unique_filename, content_type)
 
             # Save to database (Assuming candidate name is filename for now or "Unknown")
             candidate_name = os.path.splitext(resume_file.filename)[0]
@@ -237,7 +237,7 @@ async def score_resumes_batch(
                 match_details=score_data.get('explanation', ''),
                 job_role="Applicant", 
                 candidate_email=None,
-                resume_path=unique_filename
+                resume_path=saved_filename
             )
             
             results.append(ScoreResponse(
@@ -281,7 +281,26 @@ async def get_all_candidates():
     for app in apps_data:
         app_dict = dict(app)
         if app_dict.get('resume_path'):
-            app_dict['resume_url'] = f"{base_url}{app_dict['resume_path']}"
+            path = app_dict['resume_path']
+            # If using Azure Storage
+            if settings.AZURE_STORAGE_CONNECTION_STRING:
+                # If it's a full URL from our blob storage, extract filename
+                if path.startswith("http") and "blob.core.windows.net" in path:
+                    # simplistic extraction: assumes standard format
+                    filename = path.split('/')[-1]
+                    app_dict['resume_url'] = blob_service.get_sas_url(filename)
+                elif path.startswith("http"):
+                    # External URL
+                    app_dict['resume_url'] = path
+                else:
+                    # It's just a filename
+                    app_dict['resume_url'] = blob_service.get_sas_url(path)
+            # Fallback to local storage logic
+            else:
+                 if path.startswith("http"):
+                     app_dict['resume_url'] = path
+                 else:
+                     app_dict['resume_url'] = f"{base_url}{path}"
         candidates.append(CandidateApplication(**app_dict))
         
     return {"candidates": candidates}
@@ -475,12 +494,12 @@ async def apply_to_job(
             raise HTTPException(status_code=400, detail="Only PDF and DOCX files are allowed")
 
         unique_filename = f"{uuid.uuid4()}{file_ext}"
-        file_path = f"uploads/{unique_filename}"
-
+        content_type = "application/pdf"
+        if file_ext.lower() in ['.docx', '.doc']:
+             content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+             
         content = await resume_file.read()
-        with open(file_path, "wb") as f:
-            f.write(content)
-        resume_path = unique_filename
+        resume_path = blob_service.upload_file(content, unique_filename, content_type)
 
     # Create application
     # Use provided name or fallback to user profile name
@@ -505,7 +524,11 @@ async def apply_to_job(
 
     # Add resume URL if available
     if resume_path:
-        app_data['resume_url'] = f"http://localhost:8000/uploads/{resume_path}"
+        # For the immediate response, generate a link if checking immediately
+        if settings.AZURE_STORAGE_CONNECTION_STRING:
+             app_data['resume_url'] = blob_service.get_sas_url(resume_path)
+        else:
+             app_data['resume_url'] = f"http://localhost:8000/uploads/{resume_path}"
 
     return JobApplicationResponse(
         success=True,
@@ -526,7 +549,25 @@ async def get_all_job_applications(job_id: str = None):
     for app in apps_data:
         app_dict = dict(app)
         if app_dict.get('resume_path'):
-            app_dict['resume_url'] = f"{base_url}{app_dict['resume_path']}"
+            path = app_dict['resume_path']
+            if settings.AZURE_STORAGE_CONNECTION_STRING:
+                # Extract filename from full Azure URL or use as-is if just filename
+                if path.startswith("http") and "blob.core.windows.net" in path:
+                    # Extract filename from Azure URL (remove query params if any)
+                    filename = path.split('?')[0].split('/')[-1]
+                elif path.startswith("http"):
+                    # External URL, use as-is
+                    app_dict['resume_url'] = path
+                    applications.append(JobApplication(**app_dict))
+                    continue
+                else:
+                    filename = path
+                app_dict['resume_url'] = blob_service.get_sas_url(filename)
+            else:
+                if path.startswith("http"):
+                    app_dict['resume_url'] = path
+                else:
+                    app_dict['resume_url'] = f"{base_url}{path}"
         applications.append(JobApplication(**app_dict))
 
     return JobApplicationsListResponse(applications=applications)
@@ -548,7 +589,25 @@ async def get_my_applications(token: str):
     for app in apps_data:
         app_dict = dict(app)
         if app_dict.get('resume_path'):
-            app_dict['resume_url'] = f"{base_url}{app_dict['resume_path']}"
+            path = app_dict['resume_path']
+            if settings.AZURE_STORAGE_CONNECTION_STRING:
+                # Extract filename from full Azure URL or use as-is if just filename
+                if path.startswith("http") and "blob.core.windows.net" in path:
+                    # Extract filename from Azure URL (remove query params if any)
+                    filename = path.split('?')[0].split('/')[-1]
+                elif path.startswith("http"):
+                    # External URL, use as-is
+                    app_dict['resume_url'] = path
+                    applications.append(JobApplication(**app_dict))
+                    continue
+                else:
+                    filename = path
+                app_dict['resume_url'] = blob_service.get_sas_url(filename)
+            else:
+                if path.startswith("http"):
+                    app_dict['resume_url'] = path
+                else:
+                    app_dict['resume_url'] = f"{base_url}{path}"
         applications.append(JobApplication(**app_dict))
 
     return JobApplicationsListResponse(applications=applications)
@@ -564,7 +623,20 @@ async def get_job_application(app_id: str):
 
     base_url = "http://localhost:8000/uploads/"
     if app_data.get('resume_path'):
-        app_data['resume_url'] = f"{base_url}{app_data['resume_path']}"
+        path = app_data['resume_path']
+        if settings.AZURE_STORAGE_CONNECTION_STRING:
+            if path.startswith("http") and "blob.core.windows.net" in path:
+                filename = path.split('/')[-1]
+                app_data['resume_url'] = blob_service.get_sas_url(filename)
+            elif path.startswith("http"):
+                app_data['resume_url'] = path
+            else:
+                app_data['resume_url'] = blob_service.get_sas_url(path)
+        else:
+             if path.startswith("http"):
+                 app_data['resume_url'] = path
+             else:
+                 app_data['resume_url'] = f"{base_url}{path}"
 
     return {"success": True, "application": JobApplication(**app_data)}
 

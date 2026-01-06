@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     EMAIL_SENDER: str = ""
     EMAIL_PASSWORD: str = ""
 
+    # Azure Blob Storage Settings
+    AZURE_STORAGE_CONNECTION_STRING: str = ""
+    AZURE_CONTAINER_NAME: str = "resumes"
+
     # This tells Pydantic to load settings from a .env file
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding='utf-8', extra='ignore')
 
