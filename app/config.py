@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     AZURE_STORAGE_CONNECTION_STRING: str = ""
     AZURE_CONTAINER_NAME: str = "resumes"
 
+    # PostgreSQL Database URL (Neon)
+    DATABASE_URL: str = ""
+
     # This tells Pydantic to load settings from a .env file
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding='utf-8', extra='ignore')
 

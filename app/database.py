@@ -1,20 +1,18 @@
 """
-SQLite Database module for user authentication.
+PostgreSQL Database module for user authentication.
+Uses Neon PostgreSQL cloud database.
 """
-import sqlite3
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from typing import Optional, List
 import hashlib
 import secrets
-import os
-
-# Database file path (in the app directory)
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'talentflow.db')
+from .config import settings
 
 def get_connection():
     """Get a database connection."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # Enable dict-like access
+    conn = psycopg2.connect(settings.DATABASE_URL)
     return conn
 
 def init_db():
@@ -56,16 +54,11 @@ def init_db():
             score INTEGER,
             match_details TEXT,
             status TEXT DEFAULT 'pending',
-            created_at TEXT NOT NULL
+            created_at TEXT NOT NULL,
+            resume_path TEXT
         )
     ''')
     
-    # Migration: Add resume_path column if it doesn't exist
-    try:
-        cursor.execute("ALTER TABLE applications ADD COLUMN resume_path TEXT")
-    except sqlite3.OperationalError:
-        pass # Column already exists
-
     # Create job_postings table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS job_postings (
@@ -96,27 +89,22 @@ def init_db():
             cover_letter TEXT,
             status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'reviewed', 'shortlisted', 'rejected', 'hired')),
             created_at TEXT NOT NULL,
+            relevant_experience TEXT,
+            overall_experience TEXT,
+            current_location TEXT,
+            preferred_location TEXT,
+            current_ctc TEXT,
+            expected_ctc TEXT,
+            current_company TEXT,
+            notice_period TEXT,
             FOREIGN KEY (job_id) REFERENCES job_postings(id),
             FOREIGN KEY (candidate_id) REFERENCES users(id)
         )
     ''')
 
-    # Migration: Add new candidate fields to job_applications if they don't exist
-    new_columns = [
-        'relevant_experience', 'overall_experience', 'current_location', 
-        'preferred_location', 'current_ctc', 'expected_ctc', 
-        'current_company', 'notice_period'
-    ]
-    
-    for col in new_columns:
-        try:
-            cursor.execute(f"ALTER TABLE job_applications ADD COLUMN {col} TEXT")
-        except sqlite3.OperationalError:
-            pass # Column already exists
-
     conn.commit()
     conn.close()
-    print(f"Database initialized at: {DB_PATH}")
+    print(f"PostgreSQL Database initialized successfully!")
 
 def hash_password(password: str) -> str:
     """Hash a password using SHA-256."""
@@ -144,7 +132,7 @@ def create_application(candidate_name: str, score: int, match_details: str,
     
     cursor.execute('''
         INSERT INTO applications (id, candidate_name, candidate_email, job_role, score, match_details, created_at, resume_path)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     ''', (app_id, candidate_name, candidate_email, job_role, score, match_details, created_at, resume_path))
     
     conn.commit()
@@ -161,7 +149,6 @@ def create_application(candidate_name: str, score: int, match_details: str,
         'resume_path': resume_path
     }
     conn.close()
-    conn.close()
     return row
 
 def update_application_status(app_id: str, status: str) -> bool:
@@ -169,7 +156,7 @@ def update_application_status(app_id: str, status: str) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
     
-    cursor.execute("UPDATE applications SET status = ? WHERE id = ?", (status, app_id))
+    cursor.execute("UPDATE applications SET status = %s WHERE id = %s", (status, app_id))
     updated = cursor.rowcount > 0
     
     conn.commit()
@@ -179,7 +166,7 @@ def update_application_status(app_id: str, status: str) -> bool:
 def get_all_applications() -> List[dict]:
     """Get all applications/scored resumes."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     cursor.execute("SELECT * FROM applications ORDER BY created_at DESC")
     rows = cursor.fetchall()
@@ -233,7 +220,7 @@ def create_user(email: str, password: str, full_name: str, role: str,
         
         cursor.execute('''
             INSERT INTO users (id, email, password_hash, full_name, role, phone, resume_url, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         ''', (user_id, email.lower(), password_hash, full_name, role, phone, resume_url, created_at))
         
         conn.commit()
@@ -247,8 +234,9 @@ def create_user(email: str, password: str, full_name: str, role: str,
             'resume_url': resume_url,
             'created_at': created_at
         }
-    except sqlite3.IntegrityError:
+    except psycopg2.IntegrityError:
         # Email already exists
+        conn.rollback()
         return None
     finally:
         conn.close()
@@ -256,9 +244,9 @@ def create_user(email: str, password: str, full_name: str, role: str,
 def get_user_by_email(email: str) -> Optional[dict]:
     """Get a user by their email address."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     
-    cursor.execute('SELECT * FROM users WHERE email = ?', (email.lower(),))
+    cursor.execute('SELECT * FROM users WHERE email = %s', (email.lower(),))
     row = cursor.fetchone()
     conn.close()
     
@@ -276,7 +264,7 @@ def verify_password(email: str, password: str) -> bool:
 def get_all_candidates() -> List[dict]:
     """Get all users with role='candidate'."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     cursor.execute("SELECT id, email, full_name, role, phone, resume_url, created_at FROM users WHERE role = 'candidate'")
     rows = cursor.fetchall()
@@ -296,7 +284,7 @@ def create_token(user_email: str) -> str:
     
     cursor.execute('''
         INSERT INTO tokens (token, user_email, created_at)
-        VALUES (?, ?, ?)
+        VALUES (%s, %s, %s)
     ''', (token, user_email.lower(), created_at))
     
     conn.commit()
@@ -307,13 +295,13 @@ def create_token(user_email: str) -> str:
 def get_user_by_token(token: str) -> Optional[dict]:
     """Get a user by their session token."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     cursor.execute('''
         SELECT u.id, u.email, u.full_name, u.role, u.phone, u.resume_url, u.created_at
         FROM tokens t
         JOIN users u ON t.user_email = u.email
-        WHERE t.token = ?
+        WHERE t.token = %s
     ''', (token,))
     
     row = cursor.fetchone()
@@ -328,7 +316,7 @@ def delete_token(token: str) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
     
-    cursor.execute('DELETE FROM tokens WHERE token = ?', (token,))
+    cursor.execute('DELETE FROM tokens WHERE token = %s', (token,))
     deleted = cursor.rowcount > 0
     
     conn.commit()
@@ -352,7 +340,7 @@ def create_job_posting(title: str, company_name: str, description: str,
     cursor.execute('''
         INSERT INTO job_postings (id, title, company_name, description, experience_level,
                                   location, responsibilities, skills, status, created_by, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     ''', (job_id, title, company_name, description, experience_level, location,
           responsibilities, skills, status, created_by, created_at))
 
@@ -376,10 +364,10 @@ def create_job_posting(title: str, company_name: str, description: str,
 def get_all_job_postings(status: Optional[str] = None) -> List[dict]:
     """Get all job postings, optionally filtered by status."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     if status:
-        cursor.execute("SELECT * FROM job_postings WHERE status = ? ORDER BY created_at DESC", (status,))
+        cursor.execute("SELECT * FROM job_postings WHERE status = %s ORDER BY created_at DESC", (status,))
     else:
         cursor.execute("SELECT * FROM job_postings ORDER BY created_at DESC")
 
@@ -391,9 +379,9 @@ def get_all_job_postings(status: Optional[str] = None) -> List[dict]:
 def get_job_posting_by_id(job_id: str) -> Optional[dict]:
     """Get a specific job posting by ID."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    cursor.execute("SELECT * FROM job_postings WHERE id = ?", (job_id,))
+    cursor.execute("SELECT * FROM job_postings WHERE id = %s", (job_id,))
     row = cursor.fetchone()
     conn.close()
 
@@ -406,7 +394,7 @@ def update_job_posting_status(job_id: str, status: str) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("UPDATE job_postings SET status = ? WHERE id = ?", (status, job_id))
+    cursor.execute("UPDATE job_postings SET status = %s WHERE id = %s", (status, job_id))
     updated = cursor.rowcount > 0
 
     conn.commit()
@@ -418,7 +406,7 @@ def delete_job_posting(job_id: str) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("DELETE FROM job_postings WHERE id = ?", (job_id,))
+    cursor.execute("DELETE FROM job_postings WHERE id = %s", (job_id,))
     deleted = cursor.rowcount > 0
 
     conn.commit()
@@ -453,7 +441,7 @@ def create_job_application(job_id: str, candidate_id: str, candidate_name: str,
             preferred_location, current_ctc, expected_ctc,
             current_company, notice_period
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending', %s, %s, %s, %s, %s, %s, %s, %s, %s)
     ''', (
         app_id, job_id, candidate_id, candidate_name, candidate_email, 
         resume_path, cover_letter, created_at,
@@ -488,14 +476,14 @@ def create_job_application(job_id: str, candidate_id: str, candidate_name: str,
 def get_all_job_applications(job_id: Optional[str] = None) -> List[dict]:
     """Get all job applications, optionally filtered by job_id."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     if job_id:
         cursor.execute("""
             SELECT ja.*, jp.title as job_title, jp.company_name
             FROM job_applications ja
             LEFT JOIN job_postings jp ON ja.job_id = jp.id
-            WHERE ja.job_id = ?
+            WHERE ja.job_id = %s
             ORDER BY ja.created_at DESC
         """, (job_id,))
     else:
@@ -514,13 +502,13 @@ def get_all_job_applications(job_id: Optional[str] = None) -> List[dict]:
 def get_job_applications_by_candidate(candidate_id: str) -> List[dict]:
     """Get all applications by a specific candidate."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     cursor.execute("""
         SELECT ja.*, jp.title as job_title, jp.company_name
         FROM job_applications ja
         LEFT JOIN job_postings jp ON ja.job_id = jp.id
-        WHERE ja.candidate_id = ?
+        WHERE ja.candidate_id = %s
         ORDER BY ja.created_at DESC
     """, (candidate_id,))
 
@@ -532,13 +520,13 @@ def get_job_applications_by_candidate(candidate_id: str) -> List[dict]:
 def get_job_application_by_id(app_id: str) -> Optional[dict]:
     """Get a specific job application by ID."""
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     cursor.execute("""
         SELECT ja.*, jp.title as job_title, jp.company_name
         FROM job_applications ja
         LEFT JOIN job_postings jp ON ja.job_id = jp.id
-        WHERE ja.id = ?
+        WHERE ja.id = %s
     """, (app_id,))
     row = cursor.fetchone()
     conn.close()
@@ -552,7 +540,7 @@ def update_job_application_status(app_id: str, status: str) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("UPDATE job_applications SET status = ? WHERE id = ?", (status, app_id))
+    cursor.execute("UPDATE job_applications SET status = %s WHERE id = %s", (status, app_id))
     updated = cursor.rowcount > 0
 
     conn.commit()
@@ -566,7 +554,7 @@ def check_existing_application(job_id: str, candidate_id: str) -> bool:
 
     cursor.execute("""
         SELECT id FROM job_applications
-        WHERE job_id = ? AND candidate_id = ?
+        WHERE job_id = %s AND candidate_id = %s
     """, (job_id, candidate_id))
 
     row = cursor.fetchone()
