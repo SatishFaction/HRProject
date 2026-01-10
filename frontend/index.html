@@ -757,7 +757,7 @@
 
     // ==================== API CONFIG ====================
     const API_CONFIG = {
-      BASE_URL: 'http://localhost:8000',  // Update this to your API URL
+      BASE_URL: '',  // Using relative URLs
       OPENAI_REALTIME_URL: 'wss://api.openai.com/v1/realtime',
     };
 
@@ -3051,7 +3051,7 @@
     // Settings Page
     function SettingsPage() {
       const [settings, setSettings] = useState({
-        apiBaseUrl: 'http://localhost:8000',
+        apiBaseUrl: '',
         openaiKey: '',
         mistralKey: '',
         azureEndpoint: '',
@@ -3086,7 +3086,7 @@
                 <label style={styles.label}>Backend API URL</label>
                 <input
                   style={styles.input}
-                  placeholder="http://localhost:8000"
+                  placeholder="Leave empty for relative URLs"
                   value={settings.apiBaseUrl}
                   onChange={(e) => setSettings({ ...settings, apiBaseUrl: e.target.value })}
                   onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
