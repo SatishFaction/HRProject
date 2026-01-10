@@ -17,7 +17,7 @@ class EmailService:
         msg['From'] = self.sender_email
         msg['To'] = to
         msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'html' if html else 'plain'))
+        msg.attach(MIMEText(body, 'html' if html else 'plain', 'utf-8'))
         
         with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
             server.starttls()
@@ -57,7 +57,7 @@ class EmailService:
                         msg['From'] = self.sender_email
                         msg['To'] = email
                         msg['Subject'] = subject
-                        msg.attach(MIMEText(personalized_body, 'html' if html else 'plain'))
+                        msg.attach(MIMEText(personalized_body, 'html' if html else 'plain', 'utf-8'))
                         
                         server.send_message(msg)
                         results["success"].append({"email": email, "status": "sent"})
